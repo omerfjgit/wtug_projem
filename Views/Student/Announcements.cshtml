@@ -1,0 +1,44 @@
+@model IEnumerable<NoteTrackerApp.Models.Announcement>
+
+@{
+    ViewData["Title"] = "Okul Duyuruları";
+    Layout = "_LayoutStudent";
+}
+
+<div class="glass-card h-100">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold m-0"><i class="bi bi-megaphone-fill text-warning me-2"></i> Tüm Duyurular</h5>
+    </div>
+    
+    <div class="row g-4">
+        @if (!Model.Any())
+        {
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-bell-slash fs-1 d-block mb-3"></i>
+                Şu an için yayınlanmış bir duyuru bulunmuyor.
+            </div>
+        }
+        else
+        {
+            foreach (var announcement in Model)
+            {
+                var bgClass = "bg-secondary";
+                if(announcement.Category == "Sınav") bgClass = "bg-danger";
+                if(announcement.Category == "Etkinlik") bgClass = "bg-success";
+                if(announcement.Category == "Uyarı") bgClass = "bg-warning text-dark";
+                if(announcement.Category == "Genel") bgClass = "bg-primary";
+
+                <div class="col-12 col-md-6">
+                    <div class="p-4 border rounded h-100" style="background-color: var(--table-light-bg); border-color: var(--card-border) !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge @bgClass">@announcement.Category</span>
+                            <small class="text-muted"><i class="bi bi-clock me-1"></i> @announcement.CreatedAt.ToString("dd MMM yyyy")</small>
+                        </div>
+                        <h5 class="fw-bold mb-3" style="color: var(--text-color);">@announcement.Title</h5>
+                        <p class="m-0" style="color: var(--text-color); opacity: 0.9; line-height: 1.6;">@announcement.Content</p>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

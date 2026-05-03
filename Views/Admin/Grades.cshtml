@@ -1,0 +1,61 @@
+@model IEnumerable<NoteTrackerApp.Models.Grade>
+
+@{
+    ViewData["Title"] = "Not Kayıtları";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="m-0 fw-bold">Tüm Öğrenci Notları</h5>
+        <a asp-action="CreateGrade" class="btn btn-sm btn-primary"><i class="bi bi-plus"></i> Not Girişi Yap</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Öğrenci</th>
+                    <th>Ders</th>
+                    <th>Dönem</th>
+                    <th>S1</th>
+                    <th>S2</th>
+                    <th>Söz1</th>
+                    <th>Söz2</th>
+                    <th>Per1</th>
+                    <th>Per2</th>
+                    <th>Proje</th>
+                    <th>Ort</th>
+                    <th>Durum</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(!Model.Any()) {
+                    <tr><td colspan="12" class="text-center text-muted py-3">Henüz not kaydı yok.</td></tr>
+                }
+                @foreach (var item in Model) {
+                    <tr>
+                        <td>
+                            <div class="fw-bold">@item.Student.User.FullName</div>
+                            <small class="text-muted">No: @item.Student.StudentNumber</small>
+                        </td>
+                        <td><span class="badge bg-secondary">@item.CourseName</span></td>
+                        <td>@item.Semester</td>
+                        <td>@(item.Exam1?.ToString("0.##") ?? "-")</td>
+                        <td>@(item.Exam2?.ToString("0.##") ?? "-")</td>
+                        <td>@(item.Oral1?.ToString("0.##") ?? "-")</td>
+                        <td>@(item.Oral2?.ToString("0.##") ?? "-")</td>
+                        <td>@(item.Performance1?.ToString("0.##") ?? "-")</td>
+                        <td>@(item.Performance2?.ToString("0.##") ?? "-")</td>
+                        <td>@(item.Project?.ToString("0.##") ?? "-")</td>
+                        <td class="fw-bold text-primary">@item.Average.ToString("0.##")</td>
+                        <td>
+                            @if(item.IsPassed) { <span class="badge bg-success">Geçti</span> }
+                            else { <span class="badge bg-danger">Kaldı</span> }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

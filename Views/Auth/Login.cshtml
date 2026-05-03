@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = "_LayoutAuth";
+}
+
+<div class="text-center mb-4">
+    <i class="bi bi-mortarboard" style="font-size: 3rem; color: #38bdf8;"></i>
+    <h2 class="fw-bold mt-2">Okul Yönetim Sistemi</h2>
+    <p class="text-light opacity-75">Öğrenci veya Yönetici girişi yapın</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger bg-danger text-white border-0 py-2">
+        <i class="bi bi-exclamation-circle"></i> @ViewBag.Error
+    </div>
+}
+@if (ViewBag.Success != null)
+{
+    <div class="alert alert-success bg-success text-white border-0 py-2">
+        <i class="bi bi-check-circle"></i> @ViewBag.Success
+    </div>
+}
+
+<form asp-action="Login" method="post">
+    <div class="mb-4">
+        <label for="username" class="form-label text-light opacity-75 small">Kullanıcı Adı</label>
+        <div class="input-group">
+            <span class="input-group-text bg-transparent border-end-0 border-secondary text-light">
+                <i class="bi bi-person"></i>
+            </span>
+            <input type="text" class="form-control border-start-0 ps-0" id="username" name="username" placeholder="Örn: admin veya ogr_ahmet" required>
+        </div>
+    </div>
+    
+    <div class="mb-4">
+        <label for="password" class="form-label text-light opacity-75 small">Şifre</label>
+        <div class="input-group">
+            <span class="input-group-text bg-transparent border-end-0 border-secondary text-light">
+                <i class="bi bi-lock"></i>
+            </span>
+            <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" placeholder="Şifrenizi girin" required>
+        </div>
+        <div class="text-end mt-1">
+            <a asp-action="ForgotPassword" class="text-info text-decoration-none small">Şifremi Unuttum?</a>
+        </div>
+    </div>
+
+    <button type="submit" class="btn w-100 fw-bold py-2" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color: white; border: none; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);">
+        Giriş Yap <i class="bi bi-box-arrow-in-right ms-1"></i>
+    </button>
+</form>
+
+<div class="mt-4 text-center">
+    <small class="text-light opacity-50">Sisteme girmek için yetkiniz olmalıdır.</small>
+</div>

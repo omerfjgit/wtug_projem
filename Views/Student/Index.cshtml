@@ -1,0 +1,138 @@
+@model NoteTrackerApp.Models.Student
+
+@{
+    ViewData["Title"] = "Öğrenci Profili";
+    Layout = "_LayoutStudent";
+}
+
+<div class="row g-4">
+    <!-- Profil & Bilgiler -->
+    <div class="col-md-4">
+        <div class="glass-card text-center h-100 d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="position-relative mb-4">
+                @if (string.IsNullOrEmpty(Model.User.PhotoUrl))
+                {
+                    <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin: 0 auto; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);">
+                        @Model.User.FullName.Substring(0, 1).ToUpper()
+                    </div>
+                }
+                else
+                {
+                    <img src="@Model.User.PhotoUrl" alt="Profil Fotoğrafı" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 4px solid var(--card-bg);" />
+                }
+                
+                @if (Model.User.CanChangePhoto)
+                {
+                    <button type="button" class="btn btn-sm btn-primary rounded-circle position-absolute" style="bottom: 0; right: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);" data-bs-toggle="modal" data-bs-target="#photoModal">
+                        <i class="bi bi-camera-fill"></i>
+                    </button>
+                }
+            </div>
+
+            <h4 class="fw-bold mb-1">@Model.User.FullName</h4>
+            <p class="text-muted mb-4">@Model.ClassSection Sınıfı Öğrencisi</p>
+
+            <div class="w-100 px-4">
+                <div class="d-flex justify-content-between border-bottom border-secondary pb-2 mb-2" style="opacity: 0.7;">
+                    <span class="small fw-bold">Okul No</span>
+                    <span class="small fw-bold text-primary">@Model.StudentNumber</span>
+                </div>
+                <div class="d-flex justify-content-between pb-2" style="opacity: 0.7;">
+                    <span class="small fw-bold">Kayıt Tarihi</span>
+                    <span class="small fw-bold text-primary">@Model.RegisteredAt.ToString("dd MMM yyyy")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notlar Tablosu -->
+    <div class="col-md-8">
+        <div class="glass-card h-100">
+            <h5 class="fw-bold mb-4"><i class="bi bi-journal-check text-success me-2"></i> Dönem Notları</h5>
+            
+            @if (Model.Grades != null && Model.Grades.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" style="color: var(--text-color);">
+                        <thead style="background-color: var(--table-light-bg);">
+                            <tr>
+                                <th>Ders Adı</th>
+                                <th>Dönem</th>
+                                <th>1. Sınav</th>
+                                <th>2. Sınav</th>
+                                <th>Sözlü 1</th>
+                                <th>Sözlü 2</th>
+                                <th>Performans</th>
+                                <th>Proje</th>
+                                <th>Ortalama</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var grade in Model.Grades.OrderByDescending(g => g.CreatedAt))
+                            {
+                                <tr>
+                                    <td class="fw-bold">@grade.CourseName</td>
+                                    <td><span class="badge bg-secondary">@grade.Semester</span></td>
+                                    <td>@grade.Exam1</td>
+                                    <td>@grade.Exam2</td>
+                                    <td>@grade.Oral1</td>
+                                    <td>@grade.Oral2</td>
+                                    <td>@grade.Performance1</td>
+                                    <td>@grade.Project</td>
+                                    <td class="fw-bold @(grade.Average >= 50 ? "text-success" : "text-danger")">
+                                        @grade.Average.ToString("0.00")
+                                    </td>
+                                    <td>
+                                        @if (grade.IsPassed)
+                                        {
+                                            <span class="badge bg-success">Geçti</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Kaldı</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-folder2-open fs-1 d-block mb-3"></i>
+                    Henüz not girişi yapılmamış.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Photo Upload Modal -->
+@if (Model.User.CanChangePhoto)
+{
+    <div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--card-bg); border: 1px solid var(--card-border);">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Profil Fotoğrafını Değiştir</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: var(--bs-theme) == 'dark' ? 'invert(1)' : 'none';"></button>
+                </div>
+                <form asp-action="UploadPhoto" method="post" enctype="multipart/form-data">
+                    <div class="modal-body py-4">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Yeni Fotoğraf Seç (Max 2MB)</label>
+                            <input type="file" name="photoFile" class="form-control" accept="image/*" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Yükle ve Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,14 @@
+# Visual Studio / .NET Core
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+*.DS_Store
+*.appsettings.json
+*.appsettings.Development.json
+wwwroot/uploads/*
+!wwwroot/uploads/.keep

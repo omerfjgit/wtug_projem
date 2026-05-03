@@ -1,0 +1,51 @@
+@model IEnumerable<NoteTrackerApp.Models.Announcement>
+
+@{
+    ViewData["Title"] = "Duyuru Yönetimi";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="m-0 fw-bold">Yayınlanan Duyurular</h5>
+        <a asp-action="CreateAnnouncement" class="btn btn-sm btn-primary"><i class="bi bi-plus"></i> Yeni Duyuru</a>
+    </div>
+
+    <div class="row g-4">
+        @if(!Model.Any()) {
+            <div class="col-12 text-center text-muted py-3">Henüz duyuru yayınlanmamış.</div>
+        }
+        @foreach (var item in Model) {
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm border" style="background-color: var(--card-bg); border-color: var(--card-border) !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                @{
+                                    var bgClass = "bg-secondary";
+                                    if(item.Category == "Sınav") bgClass = "bg-danger";
+                                    if(item.Category == "Etkinlik") bgClass = "bg-success";
+                                    if(item.Category == "Uyarı") bgClass = "bg-warning text-dark";
+                                    if(item.Category == "Genel") bgClass = "bg-primary";
+                                }
+                                <span class="badge @bgClass mb-2">@item.Category</span>
+                                <h6 class="card-title fw-bold m-0" style="color: var(--text-color);">@item.Title</h6>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block" style="white-space: nowrap;">@item.CreatedAt.ToString("dd MMM yyyy")</small>
+                                <a asp-action="AnnouncementViewers" asp-route-id="@item.Id" class="badge bg-info mt-1 text-dark text-decoration-none">
+                                    <i class="bi bi-eye"></i> @(item.Views?.Count ?? 0) Görüldü
+                                </a>
+                            </div>
+                        </div>
+                        <p class="card-text mt-3 small" style="color: var(--text-color); opacity: 0.8;">@item.Content</p>
+                    </div>
+                    <div class="card-footer border-top text-end py-2" style="background: transparent; border-color: var(--card-border) !important;">
+                        <a asp-action="EditAnnouncement" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Düzenle</a>
+                        <a asp-action="DeleteAnnouncement" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger ms-1" onclick="return confirm('Bu duyuruyu silmek istediğinize emin misiniz?');"><i class="bi bi-trash"></i> Sil</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

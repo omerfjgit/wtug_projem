@@ -1,0 +1,44 @@
+@model NoteTrackerApp.Models.Announcement
+
+@{
+    ViewData["Title"] = "Yeni Duyuru Yayınla";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="glass-card">
+            <h5 class="mb-4 fw-bold"><i class="bi bi-megaphone text-info"></i> Duyuru Oluştur</h5>
+            
+            <form asp-action="CreateAnnouncement" method="post">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="Category" class="form-label text-muted small fw-bold"></label>
+                        <select asp-for="Category" class="form-select" required>
+                            <option value="">-- Kategori Seç --</option>
+                            <option value="Genel">Genel</option>
+                            <option value="Sınav">Sınav</option>
+                            <option value="Etkinlik">Etkinlik</option>
+                            <option value="Uyarı">Uyarı</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="Title" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Title" class="form-control" placeholder="Örn: Yarınki sınavlar hakkında" required />
+                    </div>
+                    
+                    <div class="col-12">
+                        <label asp-for="Content" class="form-label text-muted small fw-bold"></label>
+                        <textarea asp-for="Content" class="form-control" rows="5" placeholder="Duyuru metnini buraya yazın... Bu metni tüm öğrenciler kendi panelinde görecek." required></textarea>
+                    </div>
+                    
+                    <div class="col-12 mt-4 text-end">
+                        <a asp-action="Announcements" class="btn btn-outline-secondary me-2">İptal</a>
+                        <button type="submit" class="btn btn-info text-white"><i class="bi bi-send"></i> Yayınla</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,68 @@
+@model NoteTrackerApp.Models.Student
+
+@{
+    ViewData["Title"] = "Öğrenci Düzenle";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="glass-card">
+            <h5 class="mb-4 fw-bold"><i class="bi bi-person-lines-fill text-primary"></i> Öğrenci Profilini Düzenle</h5>
+
+            <form asp-action="EditStudent" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="@Model.Id" />
+                
+                <div class="text-center mb-4">
+                    @if(!string.IsNullOrEmpty(Model.User.PhotoUrl)) {
+                        <img src="@Model.User.PhotoUrl" class="rounded-circle border border-3 border-primary" style="width: 100px; height: 100px; object-fit: cover; margin-bottom: 10px;" />
+                    } else {
+                        <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center border border-3 border-secondary" style="width: 100px; height: 100px; margin-bottom: 10px;">
+                            <i class="bi bi-person fs-1"></i>
+                        </div>
+                    }
+                    <div>
+                        <label class="form-label text-muted small fw-bold">Admin Olarak Fotoğraf Yükle/Değiştir (İsteğe Bağlı)</label>
+                        <input type="file" name="photoFile" class="form-control form-control-sm w-50 mx-auto" accept="image/*" />
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Öğrenci No</label>
+                        <input type="text" name="studentNumber" class="form-control" value="@Model.StudentNumber" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Sınıf / Şube</label>
+                        <input type="text" name="classSection" class="form-control" value="@Model.ClassSection" required />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-muted small fw-bold">Öğrencinin Adı Soyadı</label>
+                        <input type="text" name="fullName" class="form-control" value="@Model.User.FullName" required />
+                    </div>
+
+                    <div class="col-12 mt-3">
+                        <label class="form-label text-muted small fw-bold">Öğrenci Şifresini Sıfırla (İsteğe Bağlı)</label>
+                        <input type="password" name="newPassword" class="form-control border-warning" placeholder="Şifreyi değiştirmek istemiyorsanız bu alanı BOŞ bırakın." />
+                        <small class="text-muted d-block mt-1">Sadece öğrenci şifresini unuttuğunda veya sıfırlamak istediğinizde burayı kullanın.</small>
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <div class="form-check form-switch p-3 border rounded d-flex justify-content-between align-items-center" style="background-color: var(--table-light-bg);">
+                            <div>
+                                <label class="form-check-label fw-bold" for="canChangePhotoSwitch">Öğrenci Kendi Fotoğrafını Değiştirebilsin mi?</label>
+                                <small class="d-block text-muted">Kapalıysa, öğrenci kendi panelinden fotoğraf yükleyemez.</small>
+                            </div>
+                            <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="canChangePhotoSwitch" name="canChangePhoto" value="true" @(Model.User.CanChangePhoto ? "checked" : "")>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 text-end">
+                        <a asp-action="Students" class="btn btn-outline-secondary me-2">İptal</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Değişiklikleri Kaydet</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

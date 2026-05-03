@@ -1,0 +1,59 @@
+@model IEnumerable<NoteTrackerApp.Models.Student>
+
+@{
+    ViewData["Title"] = "Öğrenci Listesi";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="m-0 fw-bold">Sistemde Kayıtlı Öğrenciler</h5>
+        <a asp-action="CreateStudent" class="btn btn-sm btn-primary"><i class="bi bi-plus"></i> Yeni Öğrenci</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Fotoğraf</th>
+                    <th>Öğrenci No</th>
+                    <th>Ad Soyad</th>
+                    <th>Kullanıcı Adı</th>
+                    <th>Kurtarma Kodu</th>
+                    <th>Yetki (Fotoğraf)</th>
+                    <th class="text-end">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(!Model.Any()) {
+                    <tr><td colspan="7" class="text-center text-muted">Henüz öğrenci kaydı yok.</td></tr>
+                }
+                @foreach (var item in Model) {
+                    <tr>
+                        <td>
+                            @if(!string.IsNullOrEmpty(item.User.PhotoUrl)) {
+                                <img src="@item.User.PhotoUrl" class="rounded-circle border" style="width: 40px; height: 40px; object-fit: cover;" />
+                            } else {
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            }
+                        </td>
+                        <td class="fw-bold">@item.StudentNumber <span class="badge bg-secondary ms-1">@item.ClassSection</span></td>
+                        <td>@item.User.FullName</td>
+                        <td>@item.User.Username</td>
+                        <td><span class="badge bg-warning text-dark border border-warning fs-6">@item.User.RecoveryPin</span></td>
+                        <td>
+                            @if(item.User.CanChangePhoto) { <span class="badge bg-success">Açık</span> }
+                            else { <span class="badge bg-danger">Kapalı</span> }
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="EditStudent" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <a asp-action="DeleteStudent" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bu öğrenciyi ve tüm notlarını silmek istediğinize emin misiniz?');"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

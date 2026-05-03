@@ -1,0 +1,60 @@
+@model IEnumerable<NoteTrackerApp.Models.AnnouncementView>
+
+@{
+    ViewData["Title"] = "Duyuru Okuyanlar Listesi";
+    Layout = "_LayoutAdmin";
+    var announcement = ViewBag.Announcement as NoteTrackerApp.Models.Announcement;
+}
+
+<div class="glass-card mb-4" style="border-left: 4px solid #0dcaf0;">
+    <h5 class="fw-bold mb-2">@announcement.Title</h5>
+    <p class="text-muted m-0 small">Bu duyuruyu okuyan öğrencilerin tam listesi aşağıdadır.</p>
+</div>
+
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="m-0 fw-bold"><i class="bi bi-eye-fill text-info"></i> Toplam Görüntülenme: @Model.Count()</h5>
+        <a asp-action="Announcements" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i> Geri Dön</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-eye-slash fs-1 d-block mb-3"></i>
+            Bu duyuruyu henüz kimse okumamış.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var view in Model)
+            {
+                <div class="col-md-4 col-sm-6">
+                    <div class="p-3 border rounded d-flex align-items-center gap-3" style="background-color: var(--table-light-bg); border-color: var(--card-border) !important;">
+                        @if (string.IsNullOrEmpty(view.User.PhotoUrl))
+                        {
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #64748b; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0;">
+                                @view.User.FullName.Substring(0, 1).ToUpper()
+                            </div>
+                        }
+                        else
+                        {
+                            <img src="@view.User.PhotoUrl" alt="Profil" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
+                        }
+                        
+                        <div class="flex-grow-1 overflow-hidden">
+                            <h6 class="fw-bold m-0 text-truncate" style="color: var(--text-color);">@view.User.FullName</h6>
+                            <small class="text-muted d-block text-truncate">
+                                @{
+                                    var studentsDict = ViewBag.Students as Dictionary<int, NoteTrackerApp.Models.Student>;
+                                    var classSection = studentsDict != null && studentsDict.ContainsKey(view.UserId) ? studentsDict[view.UserId].ClassSection : "Yönetici / Bilinmiyor";
+                                }
+                                @classSection Sınıfı • @view.ViewedAt.ToString("dd MMM HH:mm")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

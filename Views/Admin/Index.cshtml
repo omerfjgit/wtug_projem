@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "Gösterge Paneli";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="glass-card d-flex align-items-center">
+            <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+            </div>
+            <div>
+                <h6 class="text-muted mb-1">Toplam Öğrenci</h6>
+                <h3 class="fw-bold m-0">@ViewBag.StudentCount</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card d-flex align-items-center">
+            <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                <i class="bi bi-graph-up text-warning" style="font-size: 2rem;"></i>
+            </div>
+            <div>
+                <h6 class="text-muted mb-1">Okul Ortalaması</h6>
+                <h3 class="fw-bold m-0">@ViewBag.AverageGrade</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card d-flex align-items-center">
+            <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                <i class="bi bi-megaphone text-info" style="font-size: 2rem;"></i>
+            </div>
+            <div>
+                <h6 class="text-muted mb-1">Duyurular</h6>
+                <h3 class="fw-bold m-0">@ViewBag.AnnouncementsCount</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <h5 class="fw-bold mb-3"><i class="bi bi-info-square"></i> Sisteme Hoş Geldiniz</h5>
+    <p class="text-muted">Bu yönetici paneli üzerinden sol menüyü kullanarak öğrencileri kaydedebilir, kayıtlı öğrencilere açılır menüden not girebilir ve tüm okula duyurular yayınlayabilirsiniz.</p>
+    <a asp-action="CreateStudent" class="btn btn-primary mt-2"><i class="bi bi-person-plus"></i> Yeni Öğrenci Ekle</a>
+</div>

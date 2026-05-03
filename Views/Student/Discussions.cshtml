@@ -1,0 +1,92 @@
+@model IEnumerable<NoteTrackerApp.Models.Post>
+
+@{
+    ViewData["Title"] = "Sosyal Kampüs";
+    Layout = "_LayoutStudent";
+    var student = ViewBag.Student as NoteTrackerApp.Models.Student;
+}
+
+<div class="row g-4">
+    <!-- Sol Taraf: Gönderi Paylaşma -->
+    <div class="col-md-4">
+        <div class="glass-card sticky-top" style="top: 90px;">
+            <h5 class="fw-bold mb-4"><i class="bi bi-chat-dots-fill text-primary"></i> Ne Düşünüyorsun?</h5>
+            
+            <form asp-action="CreatePost" method="post">
+                <div class="mb-3">
+                    <textarea name="content" class="form-control" rows="4" placeholder="Okul veya sınıfınla bir şeyler paylaş..." required style="resize: none;"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Kime Gönderilsin?</label>
+                    <select name="targetClass" class="form-select">
+                        <option value="">Tüm Okul (Herkes Görebilir)</option>
+                        <option value="@student.ClassSection">Sadece Kendi Sınıfım (@student.ClassSection)</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill">Paylaş <i class="bi bi-send ms-1"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sağ Taraf: Gönderi Akışı -->
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold m-0">Kampüs Akışı</h5>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="glass-card text-center text-muted py-5">
+                <i class="bi bi-wind fs-1 d-block mb-3"></i>
+                Buralar çok sessiz. İlk gönderiyi sen paylaş!
+            </div>
+        }
+        else
+        {
+            foreach (var post in Model)
+            {
+                <div class="glass-card mb-4" style="transition: transform 0.2s; cursor: pointer;" onclick="location.href='@Url.Action("PostDetails", new { id = post.Id })'">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            @if (string.IsNullOrEmpty(post.User.PhotoUrl))
+                            {
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                                    @post.User.FullName.Substring(0, 1).ToUpper()
+                                </div>
+                            }
+                            else
+                            {
+                                <img src="@post.User.PhotoUrl" alt="Profil" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" />
+                            }
+                            <div>
+                                <h6 class="fw-bold m-0" style="color: var(--text-color);">@post.User.FullName</h6>
+                                <small class="text-muted">
+                                    @(string.IsNullOrEmpty(post.TargetClass) ? "Tüm Okul" : $"{post.TargetClass} Sınıfı") • @post.CreatedAt.ToString("dd MMM HH:mm")
+                                </small>
+                            </div>
+                        </div>
+                        
+                        @if (post.UserId == student.UserId)
+                        {
+                            <form asp-action="DeletePost" method="post" onclick="event.stopPropagation();" onsubmit="return confirm('Bu gönderiyi silmek istediğinize emin misiniz?');">
+                                <input type="hidden" name="id" value="@post.Id" />
+                                <button type="submit" class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-trash"></i></button>
+                            </form>
+                        }
+                    </div>
+                    
+                    <p class="mb-3" style="color: var(--text-color); font-size: 1.05rem;">
+                        @post.Content
+                    </p>
+                    
+                    <div class="d-flex gap-4 border-top pt-3" style="border-color: var(--card-border) !important; opacity: 0.8;">
+                        <span class="text-muted small"><i class="bi bi-chat-left-text me-1"></i> @post.Comments.Count Yorum</span>
+                        <span class="text-muted small"><i class="bi bi-eye me-1"></i> @post.Views.Count Görüntülenme</span>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

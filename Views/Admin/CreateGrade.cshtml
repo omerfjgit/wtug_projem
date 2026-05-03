@@ -1,0 +1,83 @@
+@model NoteTrackerApp.Models.Grade
+
+@{
+    ViewData["Title"] = "Not Girişi";
+    Layout = "_LayoutAdmin";
+    var students = ViewBag.Students as List<NoteTrackerApp.Models.Student>;
+}
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="glass-card">
+            <h5 class="mb-4 fw-bold"><i class="bi bi-journal-plus text-primary"></i> Öğrenci Not Girişi</h5>
+            
+            <form asp-action="CreateGrade" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Öğrenci Seçin</label>
+                        <select asp-for="StudentId" class="form-select" required>
+                            <option value="">-- Öğrenci Seç --</option>
+                            @foreach(var s in students)
+                            {
+                                <option value="@s.Id">@s.StudentNumber - @s.User.FullName (@s.ClassSection)</option>
+                            }
+                        </select>
+                        <span asp-validation-for="StudentId" class="text-danger"></span>
+                        <small class="text-muted d-block mt-1">Not girmek istediğiniz öğrenciyi listeden bulun.</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="CourseName" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="CourseName" class="form-control" placeholder="Örn: Matematik" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Semester" class="form-label text-muted small fw-bold"></label>
+                        <select asp-for="Semester" class="form-select" required>
+                            <option value="1. Dönem">1. Dönem</option>
+                            <option value="2. Dönem">2. Dönem</option>
+                        </select>
+                    </div>
+
+                    <hr class="my-4" />
+                    <h6 class="fw-bold mb-3">Sınav ve Sözlü Notları (100 Üzerinden)</h6>
+
+                    <div class="col-md-3">
+                        <label asp-for="Exam1" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Exam1" class="form-control" type="number" step="0.01" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Exam2" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Exam2" class="form-control" type="number" step="0.01" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Oral1" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Oral1" class="form-control" type="number" step="0.01" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Oral2" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Oral2" class="form-control" type="number" step="0.01" />
+                    </div>
+
+                    <h6 class="fw-bold mt-4 mb-3">Performans ve Proje Notları</h6>
+
+                    <div class="col-md-3">
+                        <label asp-for="Performance1" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Performance1" class="form-control" type="number" step="0.01" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Performance2" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Performance2" class="form-control" type="number" step="0.01" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Project" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Project" class="form-control" type="number" step="0.01" />
+                    </div>
+
+                    <div class="col-12 mt-5 text-end">
+                        <a asp-action="Grades" class="btn btn-outline-secondary me-2">İptal</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Notları Kaydet</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

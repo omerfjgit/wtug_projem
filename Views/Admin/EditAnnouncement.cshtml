@@ -1,0 +1,49 @@
+@model NoteTrackerApp.Models.Announcement
+
+@{
+    ViewData["Title"] = "Duyuru Düzenle";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="glass-card">
+            <h5 class="mb-4 fw-bold"><i class="bi bi-pencil-square text-primary"></i> Duyuruyu Düzenle</h5>
+            
+            <div class="alert alert-warning py-2 small border-0">
+                <i class="bi bi-info-circle-fill"></i> <strong>Bilgi:</strong> Bir duyuruyu düzenlediğinizde, eski "Görüldü" istatistikleri sıfırlanır. Öğrenciler sisteme girdiklerinde bu duyuru güncel haliyle onlara tekrar "Yeni" olarak gösterilir.
+            </div>
+
+            <form asp-action="EditAnnouncement" method="post">
+                <input type="hidden" asp-for="Id" />
+                
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="Category" class="form-label text-muted small fw-bold"></label>
+                        <select asp-for="Category" class="form-select" required>
+                            <option value="Genel">Genel</option>
+                            <option value="Sınav">Sınav</option>
+                            <option value="Etkinlik">Etkinlik</option>
+                            <option value="Uyarı">Uyarı</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="Title" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="Title" class="form-control" required />
+                    </div>
+                    
+                    <div class="col-12">
+                        <label asp-for="Content" class="form-label text-muted small fw-bold"></label>
+                        <textarea asp-for="Content" class="form-control" rows="5" required></textarea>
+                    </div>
+                    
+                    <div class="col-12 mt-4 text-end">
+                        <a asp-action="Announcements" class="btn btn-outline-secondary me-2">İptal</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Değişiklikleri Kaydet</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
