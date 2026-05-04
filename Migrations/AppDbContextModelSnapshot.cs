@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NoteTrackerApp.Data;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -17,38 +18,42 @@ namespace NoteTrackerApp.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("NoteTrackerApp.Models.Announcement", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MediaType")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("MediaUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
@@ -59,16 +64,18 @@ namespace NoteTrackerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AnnouncementId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("ViewedAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -83,36 +90,38 @@ namespace NoteTrackerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("CanChangePhoto")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhotoUrl")
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("character varying(255)");
 
                     b.Property<string>("RecoveryPin")
                         .HasMaxLength(10)
-                        .HasColumnType("varchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
@@ -124,7 +133,7 @@ namespace NoteTrackerApp.Migrations
                             Id = 1,
                             CanChangePhoto = true,
                             FullName = "Sistem Yöneticisi",
-                            Password = "AQAAAAIAAYagAAAAECqCiboF9qHcQCvihbqy8sK99QP8JRiEEsnnukChjN1NHVplHG3s604tFMr2Jwehsw==",
+                            Password = "AQAAAAIAAYagAAAAEFC5decMFzIm3rtwYChRLUm2ddcAsszOgnP5JgmW0/JbUsg4ragBL8/1Okeh5Tsp5w==",
                             Role = "Admin",
                             Username = "admin"
                         });
@@ -134,30 +143,134 @@ namespace NoteTrackerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
                     b.ToTable("CalendarEvents");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Date = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Yeni Yıl",
+                            Title = "Yılbaşı"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Date = new DateTime(2025, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Ulusal Egemenlik ve Çocuk Bayramı",
+                            Title = "23 Nisan Ulusal Egemenlik ve Çocuk Bayramı"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Date = new DateTime(2025, 5, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Emek ve Dayanışma Günü",
+                            Title = "1 Mayıs İşçi Bayramı"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Date = new DateTime(2025, 5, 19, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Gençlik ve Spor Bayramı",
+                            Title = "19 Mayıs Atatürk'ü Anma, Gençlik ve Spor Bayramı"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Date = new DateTime(2025, 7, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Milli Birlik Günü",
+                            Title = "15 Temmuz Demokrasi ve Milli Birlik Günü"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Date = new DateTime(2025, 8, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Zafer Bayramı",
+                            Title = "30 Ağustos Zafer Bayramı"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Date = new DateTime(2025, 10, 29, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Türkiye Cumhuriyeti'nin Kuruluş Yıldönümü",
+                            Title = "29 Ekim Cumhuriyet Bayramı"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Date = new DateTime(2025, 11, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Mustafa Kemal Atatürk'ü saygı ve özlemle anıyoruz",
+                            Title = "10 Kasım - Atatürk'ü Anma Günü"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Date = new DateTime(2024, 9, 16, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "2024-2025 eğitim-öğretim yılı başlar",
+                            Title = "I. Dönem Başlangıcı"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Date = new DateTime(2025, 1, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "1. Dönem sona erer",
+                            Title = "I. Dönem Sonu"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Date = new DateTime(2025, 2, 3, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "2. Dönem başlar",
+                            Title = "II. Dönem Başlangıcı"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Date = new DateTime(2025, 6, 13, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "2024-2025 eğitim öğretim yılı sona erer",
+                            Title = "II. Dönem Sonu / Yıl Sonu"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Date = new DateTime(2025, 3, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Ramazan Bayramı (3 Gün)",
+                            Title = "Ramazan Bayramı"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Date = new DateTime(2025, 6, 6, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Kurban Bayramı (4 Gün)",
+                            Title = "Kurban Bayramı"
+                        });
                 });
 
             modelBuilder.Entity("NoteTrackerApp.Models.Grade", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Average")
                         .HasColumnType("decimal(5,2)");
@@ -165,10 +278,10 @@ namespace NoteTrackerApp.Migrations
                     b.Property<string>("CourseName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal?>("Exam1")
                         .HasColumnType("decimal(5,2)");
@@ -177,7 +290,7 @@ namespace NoteTrackerApp.Migrations
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<bool>("IsPassed")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("boolean");
 
                     b.Property<decimal?>("Oral1")
                         .HasColumnType("decimal(5,2)");
@@ -196,10 +309,10 @@ namespace NoteTrackerApp.Migrations
 
                     b.Property<string>("Semester")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<int>("StudentId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -212,30 +325,32 @@ namespace NoteTrackerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)");
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MediaType")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("MediaUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("TargetClass")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -248,29 +363,31 @@ namespace NoteTrackerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MediaType")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("MediaUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int>("PostId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -285,16 +402,18 @@ namespace NoteTrackerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("PostId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("ViewedAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -309,22 +428,24 @@ namespace NoteTrackerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClassSection")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<DateTime>("RegisteredAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("StudentNumber")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
