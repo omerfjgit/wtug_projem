@@ -192,6 +192,14 @@
             background: rgba(99, 102, 241, 0.1);
             color: #4f46e5;
         }
+
+        /* === PREMIUM GLASS BUTTON === */
+        :root { --anim--hover-time: 400ms; --anim--hover-ease: cubic-bezier(0.25,1,0.5,1); }
+        .glass-btn { all:unset; cursor:pointer; position:relative; pointer-events:auto; z-index:3; display:inline-flex; align-items:center; justify-content:center; gap:0.4em; background:linear-gradient(-75deg,rgba(255,255,255,0.05),rgba(255,255,255,0.25),rgba(255,255,255,0.05)); border-radius:999vw; box-shadow:inset 0 0.125em 0.125em rgba(0,0,0,0.05),inset 0 -0.125em 0.125em rgba(255,255,255,0.5),0 0.25em 0.125em -0.125em rgba(0,0,0,0.2),0 0 0.1em 0.25em inset rgba(255,255,255,0.2); backdrop-filter:blur(4px); transition:all var(--anim--hover-time) var(--anim--hover-ease); padding:0.6em 1.4em; font-family:'Outfit',sans-serif; font-weight:600; font-size:0.875rem; letter-spacing:-0.02em; color:rgba(50,50,50,1); text-shadow:0 0.25em 0.05em rgba(0,0,0,0.1); border:none; text-decoration:none; }
+        [data-bs-theme="dark"] .glass-btn { color:#f1f5f9; box-shadow:inset 0 0.125em 0.125em rgba(0,0,0,0.1),inset 0 -0.125em 0.125em rgba(255,255,255,0.15),0 0.25em 0.125em -0.125em rgba(0,0,0,0.4),0 0 0.1em 0.25em inset rgba(255,255,255,0.08); background:linear-gradient(-75deg,rgba(255,255,255,0.03),rgba(255,255,255,0.12),rgba(255,255,255,0.03)); }
+        .glass-btn:hover { transform:scale(0.975); color: inherit; text-decoration:none; }
+        .glass-btn::after { content:""; position:absolute; z-index:1; inset:0; border-radius:999vw; width:calc(100% + 1px); height:calc(100% + 1px); top:-0.5px; left:-0.5px; padding:1px; box-sizing:border-box; background:conic-gradient(from -75deg at 50% 50%,rgba(0,0,0,0.5),rgba(0,0,0,0) 5% 40%,rgba(0,0,0,0.5) 50%,rgba(0,0,0,0) 60% 95%,rgba(0,0,0,0.5)),linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0.5)); mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite:exclude; transition:all var(--anim--hover-time) var(--anim--hover-ease); }
+        .glass-btn:active { transform:scale(0.96) rotate3d(1,0,0,15deg); }
     </style>
 </head>
 <body>
@@ -228,6 +236,18 @@
                         <span>Tartışma (Sosyal)</span>
                     </a>
                 </li>
+                <li class="nav-item mt-1">
+                    <a asp-controller="Calendar" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Calendar" ? "active" : "")">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>Okul Takvimi</span>
+                    </a>
+                </li>
+                <li class="nav-item mt-1">
+                    <a asp-controller="Student" asp-action="GpaCalculator" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "GpaCalculator" ? "active" : "")">
+                        <i class="bi bi-calculator"></i>
+                        <span>Ortalama Hesaplama</span>
+                    </a>
+                </li>
             </ul>
 
             <div>
@@ -239,6 +259,17 @@
                     <div>
                         <div class="small fw-light" style="font-size: 0.7rem; opacity: 0.9;">T.C. MEB</div>
                         <div>OGM Materyal</div>
+                    </div>
+                </a>
+                
+                <!-- EBA Link -->
+                <a href="https://www.eba.gov.tr/" target="_blank" class="ogm-shortcut" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <div style="background: rgba(255,255,255,0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-laptop"></i>
+                    </div>
+                    <div>
+                        <div class="small fw-light" style="font-size: 0.7rem; opacity: 0.9;">T.C. MEB</div>
+                        <div>Eğitim Bilişim Ağı</div>
                     </div>
                 </a>
 

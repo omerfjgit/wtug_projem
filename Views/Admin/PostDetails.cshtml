@@ -2,13 +2,13 @@
 
 @{
     ViewData["Title"] = "Gönderi Detayı";
-    Layout = "_LayoutStudent";
+    Layout = "_LayoutAdmin";
 }
 
 <div class="row justify-content-center">
     <div class="col-md-8">
         <!-- Orijinal Gönderi -->
-        <div class="glass-card mb-4" style="border-left: 4px solid #4f46e5;">
+        <div class="glass-card mb-4" style="border-left: 4px solid #38bdf8;">
             <div class="d-flex align-items-start mb-3">
                 @if (string.IsNullOrEmpty(Model.User.PhotoUrl))
                 {
@@ -23,7 +23,7 @@
                 <div>
                     <h5 class="fw-bold m-0" style="color: var(--text-color);">
                         @Model.User.FullName
-                        @if(Model.User.Role == "Admin") { <i class="bi bi-patch-check-fill text-primary ms-1 small" title="Yönetici"></i> }
+                        @if(Model.User.Role == "Admin") { <i class="bi bi-patch-check-fill text-primary ms-1 small"></i> }
                     </h5>
                     <small class="text-muted">
                         @(string.IsNullOrEmpty(Model.TargetClass) ? "Tüm Okul" : $"{Model.TargetClass} Sınıfı") • @Model.CreatedAt.ToString("dd MMM yyyy HH:mm")
@@ -36,36 +36,20 @@
             @if (!string.IsNullOrEmpty(Model.MediaUrl))
             {
                 <div class="mb-3">
-                    @if (Model.MediaType == "image")
-                    {
-                        <img src="@Model.MediaUrl" class="img-fluid rounded" style="max-height:400px; object-fit:cover; width:100%;" />
-                    }
-                    else if (Model.MediaType == "video")
-                    {
-                        <video src="@Model.MediaUrl" controls class="w-100 rounded" style="max-height:400px;"></video>
-                    }
-                    else
-                    {
-                        <a href="@Model.MediaUrl" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-file-earmark-arrow-down me-1"></i> Eki İndir
-                        </a>
-                    }
+                    @if (Model.MediaType == "image") { <img src="@Model.MediaUrl" class="img-fluid rounded" style="max-height:400px; object-fit:cover; width:100%;" /> }
+                    else if (Model.MediaType == "video") { <video src="@Model.MediaUrl" controls class="w-100 rounded" style="max-height:400px;"></video> }
+                    else { <a href="@Model.MediaUrl" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-file-earmark me-1"></i> Eki İndir</a> }
                 </div>
             }
             
             <div class="d-flex gap-4 border-top pt-3" style="border-color: var(--card-border) !important; opacity: 0.8;">
                 <span class="text-muted small fw-bold"><i class="bi bi-chat-left-text me-1"></i> @Model.Comments.Count Yorum</span>
-                @{
-                    var uniqueViewCount = Model.Views.Select(v => v.UserId).Distinct().Count();
-                    var uniqueViewers = Model.Views.GroupBy(v => v.UserId).Select(g => g.First()).Take(10).ToList();
-                }
-                <span class="text-muted small fw-bold" data-bs-toggle="tooltip" title="@string.Join(", ", uniqueViewers.Select(v => v.User?.FullName ?? "Bilinmeyen")) @(uniqueViewCount > 10 ? "ve daha fazlası..." : "")">
-                    <i class="bi bi-eye me-1"></i> @uniqueViewCount Görüntülenme
-                </span>
+                @{ var uvc = Model.Views.Select(v => v.UserId).Distinct().Count(); }
+                <span class="text-muted small fw-bold"><i class="bi bi-eye me-1"></i> @uvc Görüntülenme</span>
             </div>
         </div>
 
-        <!-- Yorum Ekleme Kutusu -->
+        <!-- Yorum Ekleme -->
         <div class="glass-card mb-4">
             <form asp-action="AddComment" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="postId" value="@Model.Id" />
@@ -76,14 +60,13 @@
                     <label class="d-flex align-items-center gap-2 text-muted small" style="cursor:pointer;">
                         <i class="bi bi-paperclip fs-5"></i>
                         <input type="file" name="mediaFile" class="d-none" />
-                        <span id="fileNameDisplay">Medya Ekle</span>
+                        <span>Medya Ekle</span>
                     </label>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">Yanıtla <i class="bi bi-send ms-1"></i></button>
+                    <button type="submit" class="glass-btn">Yanıtla <i class="bi bi-send ms-1"></i></button>
                 </div>
             </form>
         </div>
 
-        <!-- Yorumlar Listesi -->
         <h6 class="fw-bold mb-3 ms-2 text-muted">Yorumlar (@Model.Comments.Count)</h6>
         
         @foreach (var comment in Model.Comments.OrderBy(c => c.CreatedAt))
@@ -98,9 +81,8 @@
                     }
                     else
                     {
-                        <img src="@comment.User.PhotoUrl" alt="Profil" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
+                        <img src="@comment.User.PhotoUrl" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
                     }
-                    
                     <div class="flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-bold" style="color: var(--text-color);">
@@ -110,13 +92,12 @@
                             <small class="text-muted">@comment.CreatedAt.ToString("HH:mm - dd MMM")</small>
                         </div>
                         <p class="m-0 small" style="color: var(--text-color); opacity: 0.9;">@comment.Content</p>
-                        
                         @if (!string.IsNullOrEmpty(comment.MediaUrl))
                         {
                             <div class="mt-2">
-                                @if (comment.MediaType == "image") { <img src="@comment.MediaUrl" class="img-fluid rounded" style="max-height:200px; object-fit:cover;" /> }
+                                @if (comment.MediaType == "image") { <img src="@comment.MediaUrl" class="img-fluid rounded" style="max-height:200px;" /> }
                                 else if (comment.MediaType == "video") { <video src="@comment.MediaUrl" controls class="w-100 rounded" style="max-height:200px;"></video> }
-                                else { <a href="@comment.MediaUrl" target="_blank" class="btn btn-sm btn-outline-secondary mt-1"><i class="bi bi-file-earmark me-1"></i> Dosyayı Gör</a> }
+                                else { <a href="@comment.MediaUrl" target="_blank" class="btn btn-sm btn-outline-secondary mt-1"><i class="bi bi-file-earmark me-1"></i> Dosya</a> }
                             </div>
                         }
                     </div>
@@ -128,13 +109,7 @@
 
 @section Scripts {
     <script>
-        // Tooltip
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
-        
-        // Dosya adı göster
-        document.querySelector('input[type="file"]')?.addEventListener('change', function() {
-            document.getElementById('fileNameDisplay').textContent = this.files[0]?.name || 'Medya Ekle';
-        });
     </script>
 }

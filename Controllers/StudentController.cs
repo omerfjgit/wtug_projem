@@ -34,7 +34,26 @@ namespace NoteTrackerApp.Controllers
                 return NotFound("Öğrenci profili bulunamadı.");
             }
 
+            var classGrades = await _context.Grades
+                .Include(g => g.Student)
+                .Where(g => g.Student.ClassSection == student.ClassSection)
+                .ToListAsync();
+
+            var classAverages = classGrades
+                .GroupBy(g => g.CourseName)
+                .ToDictionary(
+                    g => g.Key, 
+                    g => (double)g.Average(x => x.Average)
+                );
+
+            ViewBag.ClassAverages = classAverages;
+
             return View(student);
+        }
+
+        public IActionResult GpaCalculator()
+        {
+            return View();
         }
 
         [HttpPost]
@@ -112,10 +131,29 @@ namespace NoteTrackerApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePost(string content, string? targetClass)
+        public async Task<IActionResult> CreatePost(string content, string? targetClass, IFormFile? mediaFile)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var post = new Post { Content = content, TargetClass = targetClass, UserId = userId };
+
+            if (mediaFile != null && mediaFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(mediaFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await mediaFile.CopyToAsync(fileStream);
+                }
+                
+                post.MediaUrl = "/uploads/" + fileName;
+                if (mediaFile.ContentType.StartsWith("image/")) post.MediaType = "image";
+                else if (mediaFile.ContentType.StartsWith("video/")) post.MediaType = "video";
+                else post.MediaType = "file";
+            }
+
             _context.Posts.Add(post);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Discussions));
@@ -151,21 +189,48 @@ namespace NoteTrackerApp.Controllers
                 return Unauthorized();
             }
             
-            // Register view
-            if(!post.Views.Any(v => v.UserId == userId)) {
+            // Register view (duplicate guard)
+            if(!await _context.PostViews.AnyAsync(v => v.PostId == id && v.UserId == userId)) {
                 _context.PostViews.Add(new PostView { PostId = id, UserId = userId });
                 await _context.SaveChangesAsync();
-                post.Views.Add(new PostView { UserId = userId, User = await _context.Users.FindAsync(userId) }); // UI için hemen ekle
             }
+            
+            // Reload post with fresh views after possible insert
+            post = await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Comments).ThenInclude(c => c.User)
+                .Include(p => p.Views).ThenInclude(v => v.User)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            if(post == null) return NotFound();
             
             return View(post);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddComment(int postId, string content)
+        public async Task<IActionResult> AddComment(int postId, string content, IFormFile? mediaFile)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            _context.PostComments.Add(new PostComment { PostId = postId, UserId = userId, Content = content });
+            var comment = new PostComment { PostId = postId, UserId = userId, Content = content };
+
+            if (mediaFile != null && mediaFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(mediaFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await mediaFile.CopyToAsync(fileStream);
+                }
+                
+                comment.MediaUrl = "/uploads/" + fileName;
+                if (mediaFile.ContentType.StartsWith("image/")) comment.MediaType = "image";
+                else if (mediaFile.ContentType.StartsWith("video/")) comment.MediaType = "video";
+                else comment.MediaType = "file";
+            }
+
+            _context.PostComments.Add(comment);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(PostDetails), new { id = postId });
         }

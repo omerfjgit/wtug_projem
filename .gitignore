@@ -8,7 +8,10 @@
 *.suo
 *.userprefs
 *.DS_Store
-*.appsettings.json
-*.appsettings.Development.json
+
+# Yüklenen medya dosyaları (kişisel veriler)
 wwwroot/uploads/*
 !wwwroot/uploads/.keep
+
+# Lokal geliştirme ayarları (şifre içerebilir, GitHub'a gitmesin)
+appsettings.Development.json

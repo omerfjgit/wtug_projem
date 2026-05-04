@@ -1,0 +1,65 @@
+@model NoteTrackerApp.Models.AppUser
+@{
+    ViewData["Title"] = "Profil Ayarları";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-person-gear me-2 text-info"></i> Profil Ayarları</h2>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success border-0 py-2 mb-3" style="background:rgba(34,197,94,0.15); color:#22c55e; border-radius:10px;">
+        <i class="bi bi-check-circle me-2"></i> @TempData["Success"]
+    </div>
+}
+
+<div class="glass-card p-4" style="max-width:700px; margin: 0 auto;">
+    <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data">
+        <div class="row g-4 align-items-start">
+            <!-- Avatar Sütunu -->
+            <div class="col-md-4 text-center">
+                @if (string.IsNullOrEmpty(Model.PhotoUrl))
+                {
+                    <div style="width:130px; height:130px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#38bdf8); display:flex; align-items:center; justify-content:center; color:white; font-size:3.5rem; font-weight:700; margin:0 auto; box-shadow:0 10px 30px rgba(99,102,241,0.35);">
+                        @Model.FullName.Substring(0, 1).ToUpper()
+                    </div>
+                }
+                else
+                {
+                    <img src="@Model.PhotoUrl" style="width:130px; height:130px; border-radius:50%; object-fit:cover; border:4px solid #38bdf8; box-shadow:0 8px 20px rgba(0,0,0,0.2);" />
+                }
+
+                <label for="photoFile" class="glass-btn mt-3 w-100" style="cursor:pointer; font-size:0.8rem; justify-content:center;">
+                    <i class="bi bi-camera-fill me-1"></i> Fotoğraf Değiştir
+                </label>
+                <input type="file" id="photoFile" name="photoFile" class="d-none" accept="image/*" />
+                <p class="text-muted small mt-2" style="font-size:0.72rem;">Max 2 MB, JPG/PNG</p>
+            </div>
+
+            <!-- Form Sütunu -->
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small" style="color: var(--text-color); opacity:0.7;">Kullanıcı Adı</label>
+                    <input type="text" class="form-control" value="@Model.Username" disabled style="opacity:0.5;" />
+                    <div class="form-text">Kullanıcı adı değiştirilemez.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small" style="color: var(--text-color); opacity:0.7;">Ad Soyad / Ünvan</label>
+                    <input type="text" name="fullName" class="form-control" value="@Model.FullName" required placeholder="Örn: Murat Yılmaz" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold small" style="color: var(--text-color); opacity:0.7;">Yeni Şifre</label>
+                    <input type="password" name="newPassword" class="form-control" placeholder="Değiştirmek istemiyorsanız boş bırakın" />
+                </div>
+
+                <button type="submit" class="glass-btn w-100" style="justify-content:center; font-size:1rem; padding: 0.75em 1.5em;">
+                    <i class="bi bi-save me-2"></i> Değişiklikleri Kaydet
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

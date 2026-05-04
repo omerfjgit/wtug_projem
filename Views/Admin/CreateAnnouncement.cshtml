@@ -10,7 +10,7 @@
         <div class="glass-card">
             <h5 class="mb-4 fw-bold"><i class="bi bi-megaphone text-info"></i> Duyuru Oluştur</h5>
             
-            <form asp-action="CreateAnnouncement" method="post">
+            <form asp-action="CreateAnnouncement" method="post" enctype="multipart/form-data">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label asp-for="Category" class="form-label text-muted small fw-bold"></label>
@@ -31,6 +31,11 @@
                     <div class="col-12">
                         <label asp-for="Content" class="form-label text-muted small fw-bold"></label>
                         <textarea asp-for="Content" class="form-control" rows="5" placeholder="Duyuru metnini buraya yazın... Bu metni tüm öğrenciler kendi panelinde görecek." required></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label text-muted small fw-bold">Medya Ekle (Resim, Video veya Dosya)</label>
+                        <input type="file" name="mediaFile" class="form-control" />
                     </div>
                     
                     <div class="col-12 mt-4 text-end">

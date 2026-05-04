@@ -48,7 +48,7 @@
                         <td>@(item.Performance1?.ToString("0.##") ?? "-")</td>
                         <td>@(item.Performance2?.ToString("0.##") ?? "-")</td>
                         <td>@(item.Project?.ToString("0.##") ?? "-")</td>
-                        <td class="fw-bold text-primary">@item.Average.ToString("0.##")</td>
+                        <td class="fw-bold text-primary">@item.Average.ToString("0.00")</td>
                         <td>
                             @if(item.IsPassed) { <span class="badge bg-success">Geçti</span> }
                             else { <span class="badge bg-danger">Kaldı</span> }

@@ -22,5 +22,12 @@ namespace NoteTrackerApp.Models
         public AppUser User { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        [StringLength(500)]
+        public string? MediaUrl { get; set; }
+
+        [StringLength(50)]
+        public string? MediaType { get; set; }
+
     }
 }

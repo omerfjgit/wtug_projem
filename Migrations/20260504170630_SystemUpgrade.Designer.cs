@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NoteTrackerApp.Data;
 
@@ -10,9 +11,11 @@ using NoteTrackerApp.Data;
 namespace NoteTrackerApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504170630_SystemUpgrade")]
+    partial class SystemUpgrade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,7 +127,7 @@ namespace NoteTrackerApp.Migrations
                             Id = 1,
                             CanChangePhoto = true,
                             FullName = "Sistem Yöneticisi",
-                            Password = "AQAAAAIAAYagAAAAECqCiboF9qHcQCvihbqy8sK99QP8JRiEEsnnukChjN1NHVplHG3s604tFMr2Jwehsw==",
+                            Password = "AQAAAAIAAYagAAAAEHoqY8TTDbJ0xLy+KI9U1G9+tjlbpXJJ+dENkl936v+XXJNv3tZJJS2AukuszkXsbA==",
                             Role = "Admin",
                             Username = "admin"
                         });

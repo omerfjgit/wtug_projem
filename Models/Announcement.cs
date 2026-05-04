@@ -25,6 +25,13 @@ namespace NoteTrackerApp.Models
         [Display(Name = "Yayın Tarihi")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        [StringLength(500)]
+        public string? MediaUrl { get; set; }
+
+        [StringLength(50)]
+        public string? MediaType { get; set; } // "image", "video", "file"
+
+
         public ICollection<AnnouncementView> Views { get; set; } = new List<AnnouncementView>();
     }
 }

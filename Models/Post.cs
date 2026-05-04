@@ -23,6 +23,13 @@ namespace NoteTrackerApp.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        [StringLength(500)]
+        public string? MediaUrl { get; set; }
+
+        [StringLength(50)]
+        public string? MediaType { get; set; }
+
+
         public ICollection<PostComment> Comments { get; set; } = new List<PostComment>();
         public ICollection<PostView> Views { get; set; } = new List<PostView>();
     }

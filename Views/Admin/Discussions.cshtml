@@ -5,62 +5,99 @@
     Layout = "_LayoutAdmin";
 }
 
-<div class="glass-card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="m-0 fw-bold">Öğrenci Tartışmaları (Tüm Okul)</h5>
+<div class="row g-4">
+    <!-- Sol Taraf: Gönderi Paylaşma -->
+    <div class="col-md-4">
+        <div class="glass-card sticky-top" style="top: 90px;">
+            <h5 class="fw-bold mb-4"><i class="bi bi-chat-dots-fill text-primary"></i> Duyuru veya Gönderi Paylaş</h5>
+            
+            <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <textarea name="content" class="form-control" rows="4" placeholder="Okul ile bir şeyler paylaş..." required style="resize: none;"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Kime Gönderilsin?</label>
+                    <select name="targetClass" class="form-select">
+                        <option value="">Tüm Okul (Herkes Görebilir)</option>
+                        <option value="Öğretmenler">Öğretmenler</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted"><i class="bi bi-paperclip"></i> Medya Ekle</label>
+                    <input type="file" name="mediaFile" class="form-control form-control-sm" />
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill">Paylaş <i class="bi bi-send ms-1"></i></button>
+            </form>
+        </div>
     </div>
 
-    @if (!Model.Any())
-    {
-        <div class="text-center text-muted py-4">Henüz hiç gönderi paylaşılmamış.</div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-hover align-middle" style="color: var(--text-color);">
-                <thead style="background-color: var(--table-light-bg);">
-                    <tr>
-                        <th>Öğrenci</th>
-                        <th>Hedef Kitle</th>
-                        <th>Gönderi İçeriği</th>
-                        <th>Tarih</th>
-                        <th>Etkileşim</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var post in Model)
-                    {
-                        <tr>
-                            <td class="fw-bold">@post.User.FullName</td>
-                            <td>
-                                @if (string.IsNullOrEmpty(post.TargetClass))
-                                {
-                                    <span class="badge bg-primary">Tüm Okul</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-info text-dark">@post.TargetClass</span>
-                                }
-                            </td>
-                            <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                @post.Content
-                            </td>
-                            <td><small>@post.CreatedAt.ToString("dd MMM HH:mm")</small></td>
-                            <td>
-                                <span class="badge bg-secondary me-1"><i class="bi bi-chat"></i> @post.Comments.Count</span>
-                                <span class="badge bg-secondary"><i class="bi bi-eye"></i> @post.Views.Count</span>
-                            </td>
-                            <td>
-                                <form asp-action="DeletePost" method="post" onsubmit="return confirm('Bu gönderiyi silmek istediğinize emin misiniz? (Tüm yorumlar da silinecektir)');">
-                                    <input type="hidden" name="id" value="@post.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Sil</button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <!-- Sağ Taraf: Gönderi Akışı -->
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold m-0">Kampüs Akışı</h5>
         </div>
-    }
+
+        @if (!Model.Any())
+        {
+            <div class="glass-card text-center text-muted py-5">
+                <i class="bi bi-wind fs-1 d-block mb-3"></i>
+                Buralar çok sessiz. İlk gönderiyi paylaş!
+            </div>
+        }
+        else
+        {
+            foreach (var post in Model)
+            {
+                <div class="glass-card mb-4" style="transition: transform 0.2s; cursor: pointer;" onclick="location.href='@Url.Action("PostDetails", new { id = post.Id })'">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            @if (string.IsNullOrEmpty(post.User.PhotoUrl))
+                            {
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                                    @post.User.FullName.Substring(0, 1).ToUpper()
+                                </div>
+                            }
+                            else
+                            {
+                                <img src="@post.User.PhotoUrl" alt="Profil" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" />
+                            }
+                            <div>
+                                <h6 class="fw-bold m-0" style="color: var(--text-color);">
+                                    @post.User.FullName 
+                                    @if(post.User.Role == "Admin") { <i class="bi bi-patch-check-fill text-primary ms-1" title="Yönetici"></i> }
+                                </h6>
+                                <small class="text-muted">
+                                    @(string.IsNullOrEmpty(post.TargetClass) ? "Tüm Okul" : $"{post.TargetClass} Sınıfı") • @post.CreatedAt.ToString("dd MMM HH:mm")
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <form asp-action="DeletePost" method="post" onclick="event.stopPropagation();" onsubmit="return confirm('Bu gönderiyi silmek istediğinize emin misiniz?');">
+                            <input type="hidden" name="id" value="@post.Id" />
+                            <button type="submit" class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
+                    
+                    <p class="mb-3" style="color: var(--text-color); font-size: 1.05rem;">
+                        @post.Content
+                    </p>
+                    
+                    @if (!string.IsNullOrEmpty(post.MediaUrl))
+                    {
+                        if (post.MediaType == "image") { <img src="@post.MediaUrl" class="img-fluid rounded mb-3" style="max-height: 400px; object-fit: cover;" /> }
+                        else if (post.MediaType == "video") { <video src="@post.MediaUrl" controls class="w-100 rounded mb-3" style="max-height: 400px;"></video> }
+                        else { <a href="@post.MediaUrl" class="btn glass-btn btn-sm mb-3" target="_blank"><i class="bi bi-file-earmark-arrow-down"></i> Ekli Dosyayı İndir</a> }
+                    }
+                    
+                    <div class="d-flex gap-4 border-top pt-3" style="border-color: var(--card-border) !important; opacity: 0.8;">
+                        <span class="text-muted small"><i class="bi bi-chat-left-text me-1"></i> @post.Comments.Count Yorum</span>
+                        <span class="text-muted small"><i class="bi bi-eye me-1"></i> @post.Views.Count Görüntülenme</span>
+                    </div>
+                </div>
+            }
+        }
+    </div>
 </div>

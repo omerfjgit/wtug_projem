@@ -12,7 +12,7 @@
         <div class="glass-card sticky-top" style="top: 90px;">
             <h5 class="fw-bold mb-4"><i class="bi bi-chat-dots-fill text-primary"></i> Ne Düşünüyorsun?</h5>
             
-            <form asp-action="CreatePost" method="post">
+            <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
                 <div class="mb-3">
                     <textarea name="content" class="form-control" rows="4" placeholder="Okul veya sınıfınla bir şeyler paylaş..." required style="resize: none;"></textarea>
                 </div>
@@ -23,6 +23,11 @@
                         <option value="">Tüm Okul (Herkes Görebilir)</option>
                         <option value="@student.ClassSection">Sadece Kendi Sınıfım (@student.ClassSection)</option>
                     </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted"><i class="bi bi-paperclip"></i> Medya Ekle</label>
+                    <input type="file" name="mediaFile" class="form-control form-control-sm" />
                 </div>
                 
                 <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill">Paylaş <i class="bi bi-send ms-1"></i></button>
@@ -80,6 +85,13 @@
                     <p class="mb-3" style="color: var(--text-color); font-size: 1.05rem;">
                         @post.Content
                     </p>
+                    
+                    @if (!string.IsNullOrEmpty(post.MediaUrl))
+                    {
+                        if (post.MediaType == "image") { <img src="@post.MediaUrl" class="img-fluid rounded mb-3" style="max-height: 400px; object-fit: cover;" /> }
+                        else if (post.MediaType == "video") { <video src="@post.MediaUrl" controls class="w-100 rounded mb-3" style="max-height: 400px;"></video> }
+                        else { <a href="@post.MediaUrl" class="btn glass-btn btn-sm mb-3" target="_blank"><i class="bi bi-file-earmark-arrow-down"></i> Ekli Dosyayı İndir</a> }
+                    }
                     
                     <div class="d-flex gap-4 border-top pt-3" style="border-color: var(--card-border) !important; opacity: 0.8;">
                         <span class="text-muted small"><i class="bi bi-chat-left-text me-1"></i> @post.Comments.Count Yorum</span>

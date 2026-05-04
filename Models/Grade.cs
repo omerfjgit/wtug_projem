@@ -25,33 +25,41 @@ namespace NoteTrackerApp.Models
         // MEB Lise Notları
         [Range(0, 100)]
         [Display(Name = "1. Sınav")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal? Exam1 { get; set; }
 
         [Range(0, 100)]
         [Display(Name = "2. Sınav")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal? Exam2 { get; set; }
 
         [Range(0, 100)]
         [Display(Name = "1. Sözlü")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal? Oral1 { get; set; }
 
         [Range(0, 100)]
         [Display(Name = "2. Sözlü")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal? Oral2 { get; set; }
 
         [Range(0, 100)]
         [Display(Name = "1. Performans")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal? Performance1 { get; set; }
 
         [Range(0, 100)]
         [Display(Name = "2. Performans")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal? Performance2 { get; set; }
 
         [Range(0, 100)]
         [Display(Name = "Proje")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal? Project { get; set; }
 
         [Display(Name = "Ortalama")]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal Average { get; set; }
 
         [Display(Name = "Durum")]

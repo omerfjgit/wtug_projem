@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NoteTrackerApp.Data;
 using NoteTrackerApp.Models;
 using System.IO;
+using System.Security.Claims;
 
 namespace NoteTrackerApp.Controllers
 {
@@ -19,15 +20,72 @@ namespace NoteTrackerApp.Controllers
             _env = env;
         }
 
-        // --- DASHBOARD ---
         public async Task<IActionResult> Index()
         {
             var studentCount = await _context.Students.CountAsync();
             var averageGrade = await _context.Grades.AnyAsync() ? await _context.Grades.AverageAsync(g => g.Average) : 0;
             ViewBag.StudentCount = studentCount;
-            ViewBag.AverageGrade = averageGrade.ToString("0.##");
+            ViewBag.AverageGrade = averageGrade.ToString("0.00");
             ViewBag.AnnouncementsCount = await _context.Announcements.CountAsync();
+
+            var classAverages = await _context.Grades
+                .Include(g => g.Student)
+                .GroupBy(g => new { g.Student.ClassSection, g.CourseName })
+                .Select(g => new {
+                    ClassSection = g.Key.ClassSection,
+                    CourseName = g.Key.CourseName,
+                    Average = g.Average(x => x.Average)
+                })
+                .OrderBy(g => g.ClassSection)
+                .ThenBy(g => g.CourseName)
+                .ToListAsync();
+            
+            ViewBag.ClassAverages = classAverages;
+
             return View();
+        }
+
+        // --- PROFILE ---
+        public async Task<IActionResult> Profile()
+        {
+            var userId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+            var user = await _context.Users.FindAsync(userId);
+            return View(user);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(string fullName, string? newPassword, IFormFile? photoFile)
+        {
+            var userId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+            var user = await _context.Users.FindAsync(userId);
+            if(user == null) return NotFound();
+
+            user.FullName = fullName;
+
+            if (!string.IsNullOrEmpty(newPassword))
+            {
+                user.Password = NoteTrackerApp.Helpers.PasswordHelper.HashPassword(user, newPassword);
+            }
+
+            if (photoFile != null && photoFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await photoFile.CopyToAsync(fileStream);
+                }
+                user.PhotoUrl = "/uploads/" + fileName;
+            }
+
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Profil başarıyla güncellendi.";
+            return RedirectToAction(nameof(Profile));
         }
 
         // --- STUDENTS ---
@@ -47,6 +105,23 @@ namespace NoteTrackerApp.Controllers
         {
             if (ModelState.IsValid)
             {
+                // "admin" isim kontrolü
+                if (username.ToLower().Contains("admin") || fullName.ToLower().Contains("admin"))
+                {
+                    ModelState.AddModelError("", "Öğrenci adı veya kullanıcı adı 'admin' kelimesini içeremez.");
+                    return View();
+                }
+
+                // Aynı numara veya aynı isim (username/fullname) kontrolü
+                bool userExists = await _context.Users.AnyAsync(u => u.Username == username || u.FullName == fullName);
+                bool studentExists = await _context.Students.AnyAsync(s => s.StudentNumber == studentNumber);
+
+                if (userExists || studentExists)
+                {
+                    ModelState.AddModelError("", "Bu kullanıcı adı, isim veya öğrenci numarası sistemde zaten kayıtlı.");
+                    return View();
+                }
+
                 // Rastgele 6 haneli kurtarma pini oluştur (Harf ve Rakam)
                 var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                 var random = new Random();
@@ -170,8 +245,26 @@ namespace NoteTrackerApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAnnouncement(Announcement announcement)
+        public async Task<IActionResult> CreateAnnouncement(Announcement announcement, IFormFile? mediaFile)
         {
+            if (mediaFile != null && mediaFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(mediaFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await mediaFile.CopyToAsync(fileStream);
+                }
+                
+                announcement.MediaUrl = "/uploads/" + fileName;
+                if (mediaFile.ContentType.StartsWith("image/")) announcement.MediaType = "image";
+                else if (mediaFile.ContentType.StartsWith("video/")) announcement.MediaType = "video";
+                else announcement.MediaType = "file";
+            }
+
             announcement.CreatedAt = DateTime.Now;
             _context.Announcements.Add(announcement);
             await _context.SaveChangesAsync();
@@ -248,6 +341,35 @@ namespace NoteTrackerApp.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> CreatePost(string content, string? targetClass, IFormFile? mediaFile)
+        {
+            var userId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+            var post = new Post { Content = content, TargetClass = targetClass, UserId = userId };
+
+            if (mediaFile != null && mediaFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(mediaFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await mediaFile.CopyToAsync(fileStream);
+                }
+                
+                post.MediaUrl = "/uploads/" + fileName;
+                if (mediaFile.ContentType.StartsWith("image/")) post.MediaType = "image";
+                else if (mediaFile.ContentType.StartsWith("video/")) post.MediaType = "video";
+                else post.MediaType = "file";
+            }
+
+            _context.Posts.Add(post);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Discussions));
+        }
+
+        [HttpPost]
         public async Task<IActionResult> DeletePost(int id)
         {
             var post = await _context.Posts.FindAsync(id);
@@ -258,5 +380,63 @@ namespace NoteTrackerApp.Controllers
             }
             return RedirectToAction(nameof(Discussions));
         }
+
+        public async Task<IActionResult> PostDetails(int id)
+        {
+            var userId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+            var post = await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Comments).ThenInclude(c => c.User)
+                .Include(p => p.Views).ThenInclude(v => v.User)
+                .FirstOrDefaultAsync(p => p.Id == id);
+                
+            if(post == null) return NotFound();
+            
+            // Register view for admin (duplicate guard)
+            if(!await _context.PostViews.AnyAsync(v => v.PostId == id && v.UserId == userId)) {
+                _context.PostViews.Add(new PostView { PostId = id, UserId = userId });
+                await _context.SaveChangesAsync();
+            }
+
+            // Reload with fresh data
+            post = await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Comments).ThenInclude(c => c.User)
+                .Include(p => p.Views).ThenInclude(v => v.User)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            if(post == null) return NotFound();
+            
+            return View(post);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int postId, string content, IFormFile? mediaFile)
+        {
+            var userId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+            var comment = new PostComment { PostId = postId, UserId = userId, Content = content };
+
+            if (mediaFile != null && mediaFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(mediaFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await mediaFile.CopyToAsync(fileStream);
+                }
+                
+                comment.MediaUrl = "/uploads/" + fileName;
+                if (mediaFile.ContentType.StartsWith("image/")) comment.MediaType = "image";
+                else if (mediaFile.ContentType.StartsWith("video/")) comment.MediaType = "video";
+                else comment.MediaType = "file";
+            }
+
+            _context.PostComments.Add(comment);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(PostDetails), new { id = postId });
+        }
+
     }
 }

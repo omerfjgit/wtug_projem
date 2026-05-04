@@ -65,6 +65,7 @@
                                 <th>Performans</th>
                                 <th>Proje</th>
                                 <th>Ortalama</th>
+                                <th>Sınıf Ort.</th>
                                 <th>Durum</th>
                             </tr>
                         </thead>
@@ -82,6 +83,16 @@
                                     <td>@grade.Project</td>
                                     <td class="fw-bold @(grade.Average >= 50 ? "text-success" : "text-danger")">
                                         @grade.Average.ToString("0.00")
+                                    </td>
+                                    @{
+                                        var averages = ViewBag.ClassAverages as Dictionary<string, double>;
+                                        double classAvg = 0;
+                                        if(averages != null && averages.ContainsKey(grade.CourseName)) {
+                                            classAvg = averages[grade.CourseName];
+                                        }
+                                    }
+                                    <td class="fw-bold text-info">
+                                        @(classAvg > 0 ? classAvg.ToString("0.00") : "-")
                                     </td>
                                     <td>
                                         @if (grade.IsPassed)

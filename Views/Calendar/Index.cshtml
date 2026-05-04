@@ -1,0 +1,138 @@
+@{
+    ViewData["Title"] = "Okul Takvimi";
+    var role = User.IsInRole("Admin") ? "Admin" : "Student";
+    Layout = role == "Admin" ? "_LayoutAdmin" : "_LayoutStudent";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0"><i class="bi bi-calendar3 text-info me-2"></i> @ViewData["Title"]</h4>
+                @if (role == "Admin")
+                {
+                    <button class="btn glass-btn fw-bold" data-bs-toggle="modal" data-bs-target="#addEventModal">
+                        <i class="bi bi-plus-lg"></i> Yeni Etkinlik
+                    </button>
+                }
+            </div>
+            
+            <div id="calendar" class="text-light"></div>
+        </div>
+    </div>
+</div>
+
+@if (role == "Admin")
+{
+    <!-- Add Event Modal -->
+    <div class="modal fade" id="addEventModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title fw-bold">Takvime Ekle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="AddEvent" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Etkinlik Adı</label>
+                            <input type="text" name="title" class="form-control" placeholder="Örn: 19 Mayıs Gençlik ve Spor Bayramı" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Tarih</label>
+                            <input type="date" name="date" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Açıklama (İsteğe Bağlı)</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn glass-btn">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'tr',
+                themeSystem: 'bootstrap5',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                buttonText: {
+                    today: 'Bugün',
+                    month: 'Ay',
+                    week: 'Hafta',
+                    list: 'Liste'
+                },
+                events: '@Url.Action("GetEvents", "Calendar")',
+                eventClick: function(info) {
+                    @if (role == "Admin") {
+                        <text>
+                        if (confirm("Bu etkinliği silmek istiyor musunuz?\n" + info.event.title)) {
+                            var form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '@Url.Action("DeleteEvent", "Calendar")';
+                            
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'id';
+                            input.value = info.event.id;
+                            
+                            form.appendChild(input);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                        </text>
+                    } else {
+                        <text>
+                        alert("Etkinlik: " + info.event.title + "\nTarih: " + info.event.start.toLocaleDateString('tr-TR'));
+                        </text>
+                    }
+                }
+            });
+            calendar.render();
+        });
+    </script>
+
+    <style>
+        .fc-theme-bootstrap5 .fc-scrollgrid { border-color: rgba(255,255,255,0.1); }
+        .fc-theme-bootstrap5 th, .fc-theme-bootstrap5 td { border-color: rgba(255,255,255,0.1) !important; }
+        .fc-daygrid-day-number { color: #f8fafc; text-decoration: none; }
+        .fc-col-header-cell-cushion { color: #cbd5e1; text-decoration: none; }
+        .fc .fc-button-primary {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .fc .fc-button-primary:not(:disabled):active, .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background: #38bdf8;
+            border-color: #38bdf8;
+        }
+        [data-bs-theme="light"] .fc-daygrid-day-number, [data-bs-theme="light"] .fc-col-header-cell-cushion {
+            color: #334155;
+        }
+        [data-bs-theme="light"] .fc-theme-bootstrap5 .fc-scrollgrid, [data-bs-theme="light"] .fc-theme-bootstrap5 th, [data-bs-theme="light"] .fc-theme-bootstrap5 td {
+            border-color: rgba(0,0,0,0.1) !important;
+        }
+        [data-bs-theme="light"] .fc .fc-button-primary {
+            background: #0284c7;
+            border-color: #0284c7;
+            color: white;
+        }
+    </style>
+}

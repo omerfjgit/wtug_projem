@@ -1,0 +1,109 @@
+@{
+    ViewData["Title"] = "Ortalama Hesaplama";
+    Layout = "_LayoutStudent";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="glass-card mb-4">
+            <h4 class="fw-bold mb-4"><i class="bi bi-calculator text-primary me-2"></i> MEB Dönem Sonu Ortalama Hesaplama</h4>
+            <p class="text-muted">Bu araç, girdiğiniz derslere ve haftalık ders saatlerine göre ağırlıklı ortalamanızı hesaplar. Notlarınızı girerken MEB standartlarına uygun olarak hesaplama yapılır.</p>
+            
+            <div class="table-responsive mb-4">
+                <table class="table table-borderless align-middle" id="gpaTable">
+                    <thead>
+                        <tr class="border-bottom border-secondary">
+                            <th>Ders Adı</th>
+                            <th style="width: 120px;">Ders Saati</th>
+                            <th style="width: 150px;">Ders Ortalaması</th>
+                            <th style="width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="gpaBody">
+                        <!-- Satırlar buraya gelecek -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <button type="button" class="btn glass-btn text-primary fw-bold" onclick="addRow()">
+                    <i class="bi bi-plus-circle me-1"></i> Ders Ekle
+                </button>
+                <button type="button" class="btn btn-primary px-4 fw-bold rounded-pill" onclick="calculate()">
+                    Hesapla <i class="bi bi-arrow-right-short ms-1"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Sonuç Kartı -->
+        <div class="glass-card text-center d-none" id="resultCard" style="background: var(--primary-gradient); color: white;">
+            <h5 class="opacity-75 mb-2">Dönem Sonu Ağırlıklı Ortalamanız</h5>
+            <h1 class="display-3 fw-bold mb-3" id="resultText">0.00</h1>
+            <div id="resultBadge" class="badge bg-light text-dark fs-6 px-4 py-2 rounded-pill shadow-sm"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function addRow() {
+            const tbody = document.getElementById('gpaBody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-control" placeholder="Örn: Matematik" /></td>
+                <td><input type="number" class="form-control text-center course-credits" min="1" max="15" value="2" /></td>
+                <td><input type="number" class="form-control text-center course-grade" min="0" max="100" step="0.01" placeholder="0-100" /></td>
+                <td>
+                    <button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="bi bi-trash fs-5"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function calculate() {
+            const rows = document.querySelectorAll('#gpaBody tr');
+            let totalCredits = 0;
+            let totalPoints = 0;
+
+            rows.forEach(row => {
+                const creditInput = row.querySelector('.course-credits');
+                const gradeInput = row.querySelector('.course-grade');
+                
+                if(creditInput && gradeInput && gradeInput.value) {
+                    const credit = parseFloat(creditInput.value) || 0;
+                    const grade = parseFloat(gradeInput.value) || 0;
+                    
+                    if(credit > 0 && grade >= 0 && grade <= 100) {
+                        totalCredits += credit;
+                        totalPoints += (grade * credit);
+                    }
+                }
+            });
+
+            if(totalCredits > 0) {
+                const gpa = (totalPoints / totalCredits).toFixed(4);
+                
+                document.getElementById('resultCard').classList.remove('d-none');
+                document.getElementById('resultText').innerText = gpa;
+                
+                const badge = document.getElementById('resultBadge');
+                if(gpa >= 85) {
+                    badge.innerHTML = '<i class="bi bi-award-fill text-warning me-1"></i> Takdirname Alıyorsunuz!';
+                } else if(gpa >= 70) {
+                    badge.innerHTML = '<i class="bi bi-star-fill text-info me-1"></i> Teşekkür Belgesi Alıyorsunuz!';
+                } else if(gpa >= 50) {
+                    badge.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i> Sınıfı Geçiyorsunuz.';
+                } else {
+                    badge.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> Sınıf Tekrarı Riski!';
+                }
+            } else {
+                alert("Lütfen en az bir dersin saatini ve notunu geçerli bir şekilde girin.");
+            }
+        }
+
+        // Başlangıçta 5 satır ekle
+        document.addEventListener('DOMContentLoaded', () => {
+            for(let i=0; i<5; i++) addRow();
+        });
+    </script>
+}
