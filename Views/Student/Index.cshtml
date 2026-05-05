@@ -126,21 +126,54 @@
 {
     <div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="background-color: var(--card-bg); border: 1px solid var(--card-border);">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title fw-bold">Profil Fotoğrafını Değiştir</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: var(--bs-theme) == 'dark' ? 'invert(1)' : 'none';"></button>
+            <div class="modal-content" style="
+                background: rgba(15,23,42,0.92);
+                backdrop-filter: blur(28px);
+                -webkit-backdrop-filter: blur(28px);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 20px;
+                color: white;
+                box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+            ">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding: 1.25rem 1.5rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,0.2);display:flex;align-items:center;justify-content:center;color:#a5b4fc;">
+                            <i class="bi bi-camera-fill"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold m-0">Profil Fotoğrafını Değiştir</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form asp-action="UploadPhoto" method="post" enctype="multipart/form-data">
-                    <div class="modal-body py-4">
-                        <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold">Yeni Fotoğraf Seç (Max 2MB)</label>
-                            <input type="file" name="photoFile" class="form-control" accept="image/*" required />
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Maksimum 2MB boyutunda JPG veya PNG dosyası yükleyin.
+                        </p>
+                        <div style="
+                            background: rgba(255,255,255,0.04);
+                            border: 2px dashed rgba(255,255,255,0.15);
+                            border-radius: 14px;
+                            padding: 1.5rem;
+                            text-align: center;
+                            transition: all 0.3s;
+                        " id="dropZone">
+                            <i class="bi bi-cloud-upload" style="font-size:2rem;color:#6366f1;display:block;margin-bottom:0.75rem;"></i>
+                            <label for="photoFile" style="cursor:pointer;color:#a5b4fc;font-weight:600;font-size:0.9rem;">
+                                Dosya Seçmek İçin Tıkla
+                            </label>
+                            <input type="file" id="photoFile" name="photoFile" class="d-none" accept="image/*" required
+                                   onchange="document.getElementById('fileNameDisplay').textContent = this.files[0]?.name ?? ''" />
+                            <p class="text-muted small mt-2 mb-0" id="fileNameDisplay">veya sürükle & bırak</p>
                         </div>
                     </div>
-                    <div class="modal-footer border-top-0">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
-                        <button type="submit" class="btn btn-primary">Yükle ve Kaydet</button>
+                    <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); padding: 1rem 1.5rem; gap:0.75rem;">
+                        <button type="button" class="glass-btn glass-btn-sm" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-1"></i>İptal
+                        </button>
+                        <button type="submit" class="glass-btn glass-btn-sm glass-btn-success">
+                            <i class="bi bi-cloud-upload-fill me-1"></i>Yükle ve Kaydet
+                        </button>
                     </div>
                 </form>
             </div>

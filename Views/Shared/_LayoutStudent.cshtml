@@ -5,279 +5,363 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Öğrenci Portalı</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        @@property --angle-1 { syntax: "<angle>"; inherits: false; initial-value: -75deg; }
+        @@property --angle-2 { syntax: "<angle>"; inherits: false; initial-value: -45deg; }
+
         :root {
-            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            --bg-color: #f8fafc;
-            --sidebar-bg: #ffffff;
-            --text-color: #1e293b;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --card-border: rgba(255, 255, 255, 0.5);
-            --table-light-bg: #f8fafc;
+            --anim--hover-time: 400ms;
+            --anim--hover-ease: cubic-bezier(0.25,1,0.5,1);
+            --sidebar-width: 270px;
+            --topbar-h: 66px;
+            --accent: #6366f1;
         }
 
-        [data-bs-theme="dark"] {
-            --bg-color: #0f172a;
-            --sidebar-bg: #1e293b;
-            --text-color: #f8fafc;
-            --card-bg: rgba(30, 41, 59, 0.85);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --table-light-bg: #1e293b;
-        }
-
+        /* ── Base ── */
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: all 0.3s ease;
-            min-height: 100vh;
-            display: flex;
+            font-family:'Outfit',sans-serif;
+            margin:0; min-height:100vh; display:flex;
+            background: #0f172a;
+            background-image: radial-gradient(ellipse at 0% 0%, rgba(99,102,241,0.18) 0%, transparent 55%),
+                              radial-gradient(ellipse at 100% 100%, rgba(16,185,129,0.12) 0%, transparent 55%);
+            color:#f1f5f9;
+            transition: background 0.3s;
+        }
+        [data-bs-theme="light"] body, html[data-bs-theme="light"] body {
+            background: #f0f4ff;
+            background-image: radial-gradient(ellipse at 0% 0%, rgba(99,102,241,0.08) 0%, transparent 55%),
+                              radial-gradient(ellipse at 100% 100%, rgba(16,185,129,0.06) 0%, transparent 55%);
+            color:#1e293b;
         }
 
-        /* Sidebar Styling */
+        /* ── Sidebar ── */
         .sidebar {
-            width: 280px;
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--card-border);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            position: fixed;
-            height: 100vh;
-            z-index: 1000;
-            box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+            width: var(--sidebar-width);
+            min-height:100vh; position:fixed; top:0; left:0; z-index:1000;
+            background: rgba(15,23,42,0.85);
+            backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+            border-right:1px solid rgba(255,255,255,0.07);
+            display:flex; flex-direction:column;
+            padding:1.25rem 0 1rem;
+            transition:all 0.3s;
         }
-
+        [data-bs-theme="light"] .sidebar {
+            background:rgba(255,255,255,0.8);
+            border-right:1px solid rgba(99,102,241,0.12);
+        }
         .sidebar-header {
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid var(--card-border);
+            display:flex; align-items:center; gap:10px;
+            padding:0 1.25rem 1.25rem;
+            border-bottom:1px solid rgba(255,255,255,0.07);
+            margin-bottom:0.5rem;
         }
+        [data-bs-theme="light"] .sidebar-header { border-bottom-color:rgba(99,102,241,0.1); }
+        .sidebar-icon {
+            width:40px; height:40px; border-radius:12px;
+            background:linear-gradient(135deg,#6366f1,#4f46e5);
+            display:flex; align-items:center; justify-content:center;
+            color:white; font-size:1.1rem;
+            box-shadow:0 4px 14px rgba(99,102,241,0.35);
+        }
+        .sidebar-label { font-weight:700; font-size:0.95rem; color:#f1f5f9; }
+        [data-bs-theme="light"] .sidebar-label { color:#1e293b; }
+        .sidebar-sub { font-size:0.7rem; color:#64748b; }
 
-        .sidebar-logo {
-            width: 40px;
-            height: 40px;
-            background: var(--primary-gradient);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
+        .nav-section { font-size:0.65rem; font-weight:700; letter-spacing:0.1em; color:#475569; text-transform:uppercase; padding:0.6rem 1.25rem 0.2rem; }
 
         .nav-pills .nav-link {
-            color: var(--text-color);
-            padding: 12px 20px;
-            margin: 4px 12px;
-            border-radius: 10px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            opacity: 0.8;
+            color:#94a3b8; padding:0.65rem 1.25rem; margin:2px 0.75rem;
+            border-radius:10px; font-weight:500; font-size:0.875rem;
+            display:flex; align-items:center; gap:10px;
+            transition:all 0.2s;
         }
-
-        .nav-pills .nav-link i {
-            font-size: 1.2rem;
-        }
-
-        .nav-pills .nav-link:hover {
-            background-color: rgba(99, 102, 241, 0.1);
-            color: #4f46e5;
-            opacity: 1;
-        }
-
+        .nav-pills .nav-link i { font-size:1rem; width:18px; text-align:center; }
+        .nav-pills .nav-link:hover { background:rgba(99,102,241,0.12); color:#a5b4fc; }
         .nav-pills .nav-link.active {
-            background: var(--primary-gradient);
-            color: white;
-            opacity: 1;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            background:rgba(99,102,241,0.2);
+            color:#c7d2fe;
+            border-left:3px solid #6366f1;
         }
-
-        .main-content {
-            flex-grow: 1;
-            margin-left: 280px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .top-navbar {
-            height: 70px;
-            background-color: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .content-area {
-            padding: 2rem;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .profile-btn {
-            background: transparent;
-            border: 1px solid var(--card-border);
-            color: var(--text-color);
-            padding: 6px 16px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-        }
-
-        .profile-btn:hover {
-            background: rgba(255,255,255,0.1);
-        }
+        [data-bs-theme="light"] .nav-pills .nav-link { color:#475569; }
+        [data-bs-theme="light"] .nav-pills .nav-link:hover { background:rgba(99,102,241,0.08); color:#4338ca; }
+        [data-bs-theme="light"] .nav-pills .nav-link.active { background:rgba(99,102,241,0.1); color:#4338ca; }
 
         .ogm-shortcut {
-            margin: 12px;
-            padding: 12px 16px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-radius: 12px;
-            color: white !important;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            margin:6px 0.75rem; padding:10px 14px;
+            background:linear-gradient(135deg,#10b981,#059669);
+            border-radius:10px; color:white !important;
+            display:flex; align-items:center; gap:10px;
+            text-decoration:none; font-weight:600; font-size:0.82rem;
+            transition:all 0.3s;
+            box-shadow:0 4px 12px rgba(16,185,129,0.25);
+        }
+        .ogm-shortcut:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(16,185,129,0.35); }
+        .eba-shortcut {
+            margin:6px 0.75rem; padding:10px 14px;
+            background:linear-gradient(135deg,#f59e0b,#d97706);
+            border-radius:10px; color:white !important;
+            display:flex; align-items:center; gap:10px;
+            text-decoration:none; font-weight:600; font-size:0.82rem;
+            transition:all 0.3s;
+            box-shadow:0 4px 12px rgba(245,158,11,0.25);
+        }
+        .eba-shortcut:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(245,158,11,0.35); }
+
+        /* ── Main ── */
+        .main-content { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+
+        /* ── Topbar ── */
+        .top-navbar {
+            height:var(--topbar-h);
+            background:rgba(15,23,42,0.65);
+            backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border-bottom:1px solid rgba(255,255,255,0.06);
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 2rem; position:sticky; top:0; z-index:900;
+        }
+        [data-bs-theme="light"] .top-navbar {
+            background:rgba(255,255,255,0.75);
+            border-bottom:1px solid rgba(99,102,241,0.1);
+        }
+        .top-navbar h5 { font-weight:700; font-size:1.05rem; color:#f1f5f9; margin:0; }
+        [data-bs-theme="light"] .top-navbar h5 { color:#1e293b; }
+
+        .content-area { padding:2rem; flex:1; }
+
+        /* ── Glass Card ── */
+        .glass-card {
+            background:rgba(30,41,59,0.55);
+            backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+            border:1px solid rgba(255,255,255,0.07);
+            border-radius:18px; padding:1.5rem;
+            transition:all 0.3s;
+        }
+        [data-bs-theme="light"] .glass-card {
+            background:rgba(255,255,255,0.72);
+            border:1px solid rgba(99,102,241,0.12);
+            box-shadow:0 4px 24px rgba(99,102,241,0.07);
         }
 
-        .ogm-shortcut:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-            color: white;
+        /* ── Form Controls ── */
+        .form-control, .form-select {
+            background:rgba(30,41,59,0.5);
+            border:1px solid rgba(255,255,255,0.1);
+            color:#f1f5f9; border-radius:10px;
+            transition:all 0.2s;
         }
+        .form-control:focus, .form-select:focus {
+            background:rgba(30,41,59,0.7);
+            border-color:#6366f1;
+            box-shadow:0 0 0 3px rgba(99,102,241,0.2);
+            color:#f1f5f9;
+        }
+        [data-bs-theme="light"] .form-control, [data-bs-theme="light"] .form-select {
+            background:rgba(255,255,255,0.85); border-color:rgba(99,102,241,0.2); color:#1e293b;
+        }
+        [data-bs-theme="light"] .form-control:focus, [data-bs-theme="light"] .form-select:focus {
+            background:#fff; border-color:#6366f1; color:#1e293b;
+            box-shadow:0 0 0 3px rgba(99,102,241,0.15);
+        }
+        .table { color:inherit; }
+        .table th { font-size:0.72rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#64748b; border-bottom-color:rgba(255,255,255,0.06); }
+        .table td { border-color:rgba(255,255,255,0.04); vertical-align:middle; }
+        [data-bs-theme="light"] .table th { border-bottom-color:rgba(99,102,241,0.1); }
+        [data-bs-theme="light"] .table td { border-color:rgba(0,0,0,0.05); }
 
-        .theme-toggle {
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            background: transparent;
-            border: none;
-            color: var(--text-color);
-            transition: all 0.3s;
+        /* ════════════════════════════
+           PREMIUM GLASS BUTTON
+        ════════════════════════════ */
+        .btn-wrap {
+            position:relative; z-index:2; border-radius:999vw;
+            background:transparent; pointer-events:none;
+            transition:all var(--anim--hover-time) var(--anim--hover-ease);
+            display:inline-block;
         }
-        
-        .theme-toggle:hover {
-            background: rgba(99, 102, 241, 0.1);
-            color: #4f46e5;
+        .glass-btn {
+            all:unset; cursor:pointer; position:relative;
+            pointer-events:auto; z-index:3;
+            display:inline-flex; align-items:center; justify-content:center; gap:0.45em;
+            background:linear-gradient(-75deg,rgba(255,255,255,0.05),rgba(255,255,255,0.22),rgba(255,255,255,0.05));
+            border-radius:999vw;
+            box-shadow: inset 0 0.125em 0.125em rgba(0,0,0,0.06),
+                        inset 0 -0.125em 0.125em rgba(255,255,255,0.4),
+                        0 0.25em 0.125em -0.125em rgba(0,0,0,0.25),
+                        0 0 0.1em 0.25em inset rgba(255,255,255,0.15);
+            backdrop-filter:blur(4px);
+            transition:all var(--anim--hover-time) var(--anim--hover-ease);
+            padding:0.55em 1.3em;
+            font-family:'Outfit',sans-serif; font-weight:600; font-size:0.875rem;
+            letter-spacing:-0.02em; color:#f1f5f9;
+            text-shadow:0 0.25em 0.05em rgba(0,0,0,0.2);
+            border:none; text-decoration:none; white-space:nowrap;
         }
-
-        /* === PREMIUM GLASS BUTTON === */
-        :root { --anim--hover-time: 400ms; --anim--hover-ease: cubic-bezier(0.25,1,0.5,1); }
-        .glass-btn { all:unset; cursor:pointer; position:relative; pointer-events:auto; z-index:3; display:inline-flex; align-items:center; justify-content:center; gap:0.4em; background:linear-gradient(-75deg,rgba(255,255,255,0.05),rgba(255,255,255,0.25),rgba(255,255,255,0.05)); border-radius:999vw; box-shadow:inset 0 0.125em 0.125em rgba(0,0,0,0.05),inset 0 -0.125em 0.125em rgba(255,255,255,0.5),0 0.25em 0.125em -0.125em rgba(0,0,0,0.2),0 0 0.1em 0.25em inset rgba(255,255,255,0.2); backdrop-filter:blur(4px); transition:all var(--anim--hover-time) var(--anim--hover-ease); padding:0.6em 1.4em; font-family:'Outfit',sans-serif; font-weight:600; font-size:0.875rem; letter-spacing:-0.02em; color:rgba(50,50,50,1); text-shadow:0 0.25em 0.05em rgba(0,0,0,0.1); border:none; text-decoration:none; }
-        [data-bs-theme="dark"] .glass-btn { color:#f1f5f9; box-shadow:inset 0 0.125em 0.125em rgba(0,0,0,0.1),inset 0 -0.125em 0.125em rgba(255,255,255,0.15),0 0.25em 0.125em -0.125em rgba(0,0,0,0.4),0 0 0.1em 0.25em inset rgba(255,255,255,0.08); background:linear-gradient(-75deg,rgba(255,255,255,0.03),rgba(255,255,255,0.12),rgba(255,255,255,0.03)); }
-        .glass-btn:hover { transform:scale(0.975); color: inherit; text-decoration:none; }
-        .glass-btn::after { content:""; position:absolute; z-index:1; inset:0; border-radius:999vw; width:calc(100% + 1px); height:calc(100% + 1px); top:-0.5px; left:-0.5px; padding:1px; box-sizing:border-box; background:conic-gradient(from -75deg at 50% 50%,rgba(0,0,0,0.5),rgba(0,0,0,0) 5% 40%,rgba(0,0,0,0.5) 50%,rgba(0,0,0,0) 60% 95%,rgba(0,0,0,0.5)),linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0.5)); mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite:exclude; transition:all var(--anim--hover-time) var(--anim--hover-ease); }
+        [data-bs-theme="light"] .glass-btn {
+            color:rgba(30,30,50,1);
+            box-shadow: inset 0 0.125em 0.125em rgba(0,0,0,0.04),
+                        inset 0 -0.125em 0.125em rgba(255,255,255,0.7),
+                        0 0.25em 0.125em -0.125em rgba(0,0,0,0.12),
+                        0 0 0.1em 0.25em inset rgba(255,255,255,0.5);
+            text-shadow:0 0.1em 0.05em rgba(0,0,0,0.08);
+        }
+        .glass-btn:hover { transform:scale(0.975); color:inherit; text-decoration:none; }
+        .glass-btn::after {
+            content:""; position:absolute; z-index:1; inset:0; border-radius:999vw;
+            width:calc(100% + 1px); height:calc(100% + 1px); top:-0.5px; left:-0.5px;
+            padding:1px; box-sizing:border-box;
+            background:conic-gradient(from var(--angle-1) at 50% 50%,rgba(0,0,0,0.5),rgba(0,0,0,0) 5% 40%,rgba(0,0,0,0.5) 50%,rgba(0,0,0,0) 60% 95%,rgba(0,0,0,0.5)),
+                       linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0.5));
+            mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite:exclude;
+            transition:all var(--anim--hover-time) var(--anim--hover-ease), --angle-1 500ms ease;
+        }
+        .glass-btn:hover::after { --angle-1:-125deg; }
         .glass-btn:active { transform:scale(0.96) rotate3d(1,0,0,15deg); }
+        .glass-btn-sm { padding:0.35em 0.9em; font-size:0.78rem; }
+        .glass-btn-danger { color:#fca5a5 !important; }
+        .glass-btn-success { color:#86efac !important; }
+        [data-bs-theme="light"] .glass-btn-danger { color:#dc2626 !important; }
+        [data-bs-theme="light"] .glass-btn-success { color:#16a34a !important; }
+
+        /* ── Theme Toggle ── */
+        .theme-toggle {
+            cursor:pointer; padding:8px; border-radius:50%;
+            background:transparent; border:1px solid rgba(255,255,255,0.1);
+            color:#94a3b8; transition:all 0.3s; font-size:1rem;
+        }
+        .theme-toggle:hover { background:rgba(99,102,241,0.15); color:#a5b4fc; }
+        [data-bs-theme="light"] .theme-toggle { border-color:rgba(99,102,241,0.2); color:#475569; }
+
+        /* ── Profile Chip ── */
+        .profile-chip {
+            display:flex; align-items:center; gap:8px;
+            background:rgba(99,102,241,0.12);
+            border:1px solid rgba(99,102,241,0.2);
+            border-radius:20px; padding:5px 14px 5px 6px;
+            font-size:0.82rem; font-weight:600; color:#c7d2fe;
+        }
+        [data-bs-theme="light"] .profile-chip { background:rgba(99,102,241,0.08); border-color:rgba(99,102,241,0.2); color:#4338ca; }
+        .profile-chip img { width:28px; height:28px; border-radius:50%; object-fit:cover; }
+
+        /* ── Modal glass ── */
+        .modal-glass .modal-content {
+            background:rgba(15,23,42,0.88);
+            backdrop-filter:blur(24px);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:16px; color:white;
+        }
+        [data-bs-theme="light"] .modal-glass .modal-content {
+            background:rgba(255,255,255,0.92);
+            border-color:rgba(99,102,241,0.15); color:#1e293b;
+        }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.3); border-radius:3px; }
+        .glass-btn-login {
+            display: block; width: 100%; box-sizing: border-box; cursor: pointer; position: relative;
+            background: linear-gradient(-75deg, rgba(255,255,255,0.05), rgba(255,255,255,0.22), rgba(255,255,255,0.05));
+            border-radius: 12px;
+            box-shadow: inset 0 0.125em 0.125em rgba(0,0,0,0.06), inset 0 -0.125em 0.125em rgba(255,255,255,0.4),
+                        0 0.25em 0.125em -0.125em rgba(0,0,0,0.25), 0 0 0.1em 0.25em inset rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px); transition: all 0.3s ease; padding: 0.75em 1.5em;
+            font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1rem;
+            color: #f1f5f9; text-shadow: 0 0.25em 0.05em rgba(0,0,0,0.2); border: none; text-align: center;
+        }
+        .glass-btn-login:hover { transform: scale(0.985); color: #fff; }
+        .glass-btn-login::after {
+            content: ""; position: absolute; z-index: 1; inset: 0; border-radius: 12px;
+            width: calc(100% + 1px); height: calc(100% + 1px); top: -0.5px; left: -0.5px;
+            padding: 1px; box-sizing: border-box;
+            background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2));
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+        }
+        .badge-glass {
+            background: rgba(99, 102, 241, 0.1);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+        [data-bs-theme="light"] .badge-glass { background:rgba(99,102,241,0.08); color:#4338ca; border-color:rgba(99,102,241,0.15); }
     </style>
 </head>
 <body>
-
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <i class="bi bi-mortarboard-fill"></i>
-            </div>
+            <div class="sidebar-icon"><i class="bi bi-mortarboard-fill"></i></div>
             <div>
-                <h5 class="m-0 fw-bold">E-Kampüs</h5>
-                <small class="text-muted" style="font-size: 0.75rem;">Öğrenci Portalı</small>
+                <div class="sidebar-label">E-Kampüs</div>
+                <div class="sidebar-sub">Öğrenci Portalı</div>
             </div>
         </div>
 
-        <div class="d-flex flex-column justify-content-between h-100 pb-3 mt-3">
+        <div class="d-flex flex-column justify-content-between flex-grow-1 pb-2 mt-1 overflow-auto">
             <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-section">Ana Menü</li>
                 <li class="nav-item">
-                    <a asp-controller="Student" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Student" ? "active" : "")">
-                        <i class="bi bi-house-door"></i>
-                        <span>Ana Sayfa</span>
+                    <a asp-controller="Student" asp-action="Index"
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Student" ? "active" : "")">
+                        <i class="bi bi-house-door-fill"></i><span>Ana Sayfa</span>
                     </a>
                 </li>
-                <li class="nav-item mt-1">
-                    <a asp-controller="Student" asp-action="Announcements" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Announcements" ? "active" : "")">
-                        <i class="bi bi-megaphone"></i>
-                        <span>Okul Duyuruları</span>
+                <li class="nav-item">
+                    <a asp-controller="Student" asp-action="Announcements"
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Announcements" ? "active" : "")">
+                        <i class="bi bi-megaphone-fill"></i><span>Okul Duyuruları</span>
                     </a>
                 </li>
-                <li class="nav-item mt-1">
-                    <a asp-controller="Student" asp-action="Discussions" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Discussions" ? "active" : "")">
-                        <i class="bi bi-chat-square-text"></i>
-                        <span>Tartışma (Sosyal)</span>
+                <li class="nav-item">
+                    <a asp-controller="Student" asp-action="Discussions"
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Discussion") == true || ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Post") == true ? "active" : "")">
+                        <i class="bi bi-chat-square-text-fill"></i><span>Tartışma Kanalı</span>
                     </a>
                 </li>
-                <li class="nav-item mt-1">
-                    <a asp-controller="Calendar" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Calendar" ? "active" : "")">
-                        <i class="bi bi-calendar-event"></i>
-                        <span>Okul Takvimi</span>
+                <li class="nav-item">
+                    <a asp-controller="Calendar" asp-action="Index"
+                       class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Calendar" ? "active" : "")">
+                        <i class="bi bi-calendar3"></i><span>Okul Takvimi</span>
                     </a>
                 </li>
-                <li class="nav-item mt-1">
-                    <a asp-controller="Student" asp-action="GpaCalculator" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "GpaCalculator" ? "active" : "")">
-                        <i class="bi bi-calculator"></i>
-                        <span>Ortalama Hesaplama</span>
+                <li class="nav-item">
+                    <a asp-controller="Student" asp-action="GpaCalculator"
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "GpaCalculator" ? "active" : "")">
+                        <i class="bi bi-calculator-fill"></i><span>Ortalama Hesaplama</span>
                     </a>
                 </li>
             </ul>
 
             <div>
-                <!-- OGM Materyal Link -->
+                <div class="nav-section">Hızlı Erişim</div>
                 <a href="https://ogmmateryal.eba.gov.tr/" target="_blank" class="ogm-shortcut">
-                    <div style="background: rgba(255,255,255,0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <div style="background:rgba(255,255,255,0.2);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <i class="bi bi-book-half"></i>
                     </div>
                     <div>
-                        <div class="small fw-light" style="font-size: 0.7rem; opacity: 0.9;">T.C. MEB</div>
+                        <div style="font-size:0.67rem;opacity:0.85;">T.C. MEB</div>
                         <div>OGM Materyal</div>
                     </div>
                 </a>
-                
-                <!-- EBA Link -->
-                <a href="https://www.eba.gov.tr/" target="_blank" class="ogm-shortcut" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                    <div style="background: rgba(255,255,255,0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <a href="https://www.eba.gov.tr/" target="_blank" class="eba-shortcut">
+                    <div style="background:rgba(255,255,255,0.2);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <i class="bi bi-laptop"></i>
                     </div>
                     <div>
-                        <div class="small fw-light" style="font-size: 0.7rem; opacity: 0.9;">T.C. MEB</div>
+                        <div style="font-size:0.67rem;opacity:0.85;">T.C. MEB</div>
                         <div>Eğitim Bilişim Ağı</div>
                     </div>
                 </a>
 
-                <ul class="nav nav-pills flex-column mt-2">
+                <ul class="nav nav-pills flex-column mt-1">
                     <li class="nav-item">
-                        <a asp-controller="Auth" asp-action="Logout" class="nav-link text-danger">
-                            <i class="bi bi-box-arrow-right"></i>
-                            <span>Çıkış Yap</span>
+                        <a asp-controller="Auth" asp-action="Logout" class="nav-link" style="color:#f87171 !important;">
+                            <i class="bi bi-box-arrow-right"></i><span>Çıkış Yap</span>
                         </a>
                     </li>
                 </ul>
@@ -287,23 +371,29 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Navbar -->
         <div class="top-navbar">
-            <h5 class="m-0 fw-bold">@ViewData["Title"]</h5>
-            
+            <h5>@ViewData["Title"]</h5>
             <div class="d-flex align-items-center gap-3">
-                <button id="themeToggle" class="theme-toggle" title="Karanlık Mod">
-                    <i class="bi bi-moon-fill fs-5"></i>
+                <button id="themeToggle" class="theme-toggle" title="Tema Değiştir">
+                    <i class="bi bi-moon-fill" id="themeIcon"></i>
                 </button>
-                
-                <div class="profile-btn">
-                    <i class="bi bi-person-circle text-primary"></i>
-                    <span class="fw-medium small">@User.Identity.Name</span>
+                <div class="profile-chip">
+                    @{
+                        var profileImg = Context.User.FindFirst("PhotoUrl")?.Value;
+                    }
+                    @if (!string.IsNullOrEmpty(profileImg))
+                    {
+                        <img src="@profileImg" alt="profil" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-person-circle fs-5"></i>
+                    }
+                    <span>@User.Identity.Name</span>
                 </div>
             </div>
         </div>
 
-        <!-- Content Area -->
         <div class="content-area">
             <main role="main">
                 @RenderBody()
@@ -311,45 +401,31 @@
         </div>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.css"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    
-    <!-- Dark Mode Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const htmlElement = document.documentElement;
-            const themeToggleBtn = document.getElementById('themeToggle');
-            const themeIcon = themeToggleBtn.querySelector('i');
+        document.addEventListener('DOMContentLoaded', () => {
+            const html = document.documentElement;
+            const btn = document.getElementById('themeToggle');
+            const icon = document.getElementById('themeIcon');
+            const saved = localStorage.getItem('theme') || 'dark';
+            html.setAttribute('data-bs-theme', saved);
+            updateIcon(saved);
 
-            // Set Dark Mode as default if no preference is saved
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            htmlElement.setAttribute('data-bs-theme', savedTheme);
-            updateIcon(savedTheme);
-
-            themeToggleBtn.addEventListener('click', () => {
-                const currentTheme = htmlElement.getAttribute('data-bs-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                
-                htmlElement.setAttribute('data-bs-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateIcon(newTheme);
+            btn?.addEventListener('click', () => {
+                const cur = html.getAttribute('data-bs-theme');
+                const next = cur === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-bs-theme', next);
+                localStorage.setItem('theme', next);
+                updateIcon(next);
             });
 
-            function updateIcon(theme) {
-                if (theme === 'dark') {
-                    themeIcon.classList.remove('bi-moon-fill');
-                    themeIcon.classList.add('bi-sun-fill');
-                    themeIcon.classList.add('text-warning');
-                } else {
-                    themeIcon.classList.remove('bi-sun-fill');
-                    themeIcon.classList.add('bi-moon-fill');
-                    themeIcon.classList.remove('text-warning');
-                }
+            function updateIcon(t) {
+                if (!icon) return;
+                icon.className = t === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-fill';
             }
         });
     </script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

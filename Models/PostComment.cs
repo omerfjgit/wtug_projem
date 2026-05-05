@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,7 +11,7 @@ namespace NoteTrackerApp.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(500)]
+        [MaxLength(1000)]
         public string Content { get; set; }
 
         public int PostId { get; set; }
@@ -21,6 +22,12 @@ namespace NoteTrackerApp.Models
         [ForeignKey("UserId")]
         public AppUser User { get; set; }
 
+        // Yorum altına yorum (nested) — null ise ana yorum
+        public int? ParentCommentId { get; set; }
+        [ForeignKey("ParentCommentId")]
+        public PostComment? ParentComment { get; set; }
+        public ICollection<PostComment> Replies { get; set; } = new List<PostComment>();
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [StringLength(500)]
@@ -29,5 +36,7 @@ namespace NoteTrackerApp.Models
         [StringLength(50)]
         public string? MediaType { get; set; }
 
+        // Beğeni ilişkisi
+        public ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
     }
 }

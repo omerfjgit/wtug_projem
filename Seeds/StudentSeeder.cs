@@ -3,9 +3,6 @@ using NoteTrackerApp.Data;
 using NoteTrackerApp.Models;
 using NoteTrackerApp.Helpers;
 
-// Run as a standalone script: dotnet run --project . -- seed-students
-// Or call from Program.cs startup
-
 namespace NoteTrackerApp.Seeds
 {
     public static class StudentSeeder
@@ -29,17 +26,25 @@ namespace NoteTrackerApp.Seeds
 
         private static readonly string[] Classes = ["9-A", "9-B", "10-A", "10-B", "11-A", "11-B", "12-A", "12-B"];
 
+        private static string GeneratePin(Random rng)
+        {
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, 6).Select(s => s[rng.Next(s.Length)]).ToArray());
+        }
+
         public static async Task SeedAsync(AppDbContext context)
         {
-            // Mevcut öğrenci sayısını kontrol et
             var existingStudentCount = await context.Students.CountAsync();
             if (existingStudentCount >= 100)
             {
                 Console.WriteLine($"[Seeder] Zaten {existingStudentCount} öğrenci var. Atlıyor.");
+
+                // Recovery pin eksik olanları doldur
+                await FixMissingRecoveryPins(context);
                 return;
             }
 
-            var rng = new Random(42); // Sabit seed = tekrarlanabilir
+            var rng = new Random(42);
             int userIdCounter = await context.Users.MaxAsync(u => u.Id) + 1;
             int studentIdCounter = existingStudentCount > 0 
                 ? (await context.Students.MaxAsync(s => s.Id) + 1) 
@@ -61,7 +66,6 @@ namespace NoteTrackerApp.Seeds
                 var lastName = LastNames[rng.Next(LastNames.Length)];
                 var fullName = $"{firstName} {lastName}";
                 
-                // Benzersiz kullanıcı adı oluştur
                 var username = $"{firstName.ToLower().Replace("ı","i").Replace("ğ","g").Replace("ş","s").Replace("ç","c").Replace("ö","o").Replace("ü","u")}{rng.Next(100, 999)}";
                 
                 if (existingUsernames.Contains(username)) continue;
@@ -72,13 +76,16 @@ namespace NoteTrackerApp.Seeds
                 existingUsernames.Add(username);
                 existingNumbers.Add(studentNumber);
 
+                var pin = GeneratePin(rng);
+
                 var user = new AppUser
                 {
                     Id = userIdCounter++,
                     Username = username,
                     FullName = fullName,
                     Role = "Student",
-                    CanChangePhoto = rng.Next(2) == 1
+                    CanChangePhoto = rng.Next(2) == 1,
+                    RecoveryPin = pin
                 };
                 user.Password = PasswordHelper.HashPassword(user, "okul1234");
 
@@ -103,6 +110,23 @@ namespace NoteTrackerApp.Seeds
             await context.SaveChangesAsync();
 
             Console.WriteLine($"[Seeder] {added} öğrenci başarıyla eklendi.");
+        }
+
+        private static async Task FixMissingRecoveryPins(AppDbContext context)
+        {
+            var rng = new Random();
+            var usersWithoutPin = await context.Users
+                .Where(u => u.Role == "Student" && (u.RecoveryPin == null || u.RecoveryPin == ""))
+                .ToListAsync();
+
+            if (!usersWithoutPin.Any()) return;
+
+            foreach (var user in usersWithoutPin)
+            {
+                user.RecoveryPin = GeneratePin(rng);
+            }
+            await context.SaveChangesAsync();
+            Console.WriteLine($"[Seeder] {usersWithoutPin.Count} öğrenciye kurtarma kodu atandı.");
         }
     }
 }

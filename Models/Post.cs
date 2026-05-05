@@ -29,8 +29,8 @@ namespace NoteTrackerApp.Models
         [StringLength(50)]
         public string? MediaType { get; set; }
 
-
         public ICollection<PostComment> Comments { get; set; } = new List<PostComment>();
         public ICollection<PostView> Views { get; set; } = new List<PostView>();
+        public ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
     }
 }

@@ -1,59 +1,113 @@
-@model IEnumerable<NoteTrackerApp.Models.Student>
-
+@model List<NoteTrackerApp.Models.Student>
 @{
-    ViewData["Title"] = "Öğrenci Listesi";
+    ViewData["Title"] = "Öğrenciler";
     Layout = "_LayoutAdmin";
+    var search = ViewBag.Search as string ?? "";
 }
 
 <div class="glass-card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="m-0 fw-bold">Sistemde Kayıtlı Öğrenciler</h5>
-        <a asp-action="CreateStudent" class="btn btn-sm btn-primary"><i class="bi bi-plus"></i> Yeni Öğrenci</a>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold m-0"><i class="bi bi-people-fill text-primary me-2"></i>Sistemde Kayıtlı Öğrenciler</h4>
+            <small class="text-muted">Toplam @Model.Count öğrenci</small>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <form method="get" class="d-flex" style="min-width:260px;">
+                <div class="input-group">
+                    <span class="input-group-text" style="background:rgba(30,41,59,0.5);border-color:rgba(255,255,255,0.1);color:#6366f1;">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" value="@search" class="form-control" placeholder="Ad, numara, sınıf..." />
+                    <button class="glass-btn glass-btn-sm" type="submit"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+            <a asp-action="CreateStudent" class="glass-btn">
+                <i class="bi bi-person-plus-fill"></i> Yeni Öğrenci
+            </a>
+        </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Fotoğraf</th>
-                    <th>Öğrenci No</th>
-                    <th>Ad Soyad</th>
-                    <th>Kullanıcı Adı</th>
-                    <th>Kurtarma Kodu</th>
-                    <th>Yetki (Fotoğraf)</th>
-                    <th class="text-end">İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if(!Model.Any()) {
-                    <tr><td colspan="7" class="text-center text-muted">Henüz öğrenci kaydı yok.</td></tr>
-                }
-                @foreach (var item in Model) {
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-person-x" style="font-size:3rem;color:#475569;"></i>
+            <p class="text-muted mt-2">Arama kriteriyle eşleşen öğrenci bulunamadı.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
                     <tr>
-                        <td>
-                            @if(!string.IsNullOrEmpty(item.User.PhotoUrl)) {
-                                <img src="@item.User.PhotoUrl" class="rounded-circle border" style="width: 40px; height: 40px; object-fit: cover;" />
-                            } else {
-                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person"></i>
-                                </div>
-                            }
-                        </td>
-                        <td class="fw-bold">@item.StudentNumber <span class="badge bg-secondary ms-1">@item.ClassSection</span></td>
-                        <td>@item.User.FullName</td>
-                        <td>@item.User.Username</td>
-                        <td><span class="badge bg-warning text-dark border border-warning fs-6">@item.User.RecoveryPin</span></td>
-                        <td>
-                            @if(item.User.CanChangePhoto) { <span class="badge bg-success">Açık</span> }
-                            else { <span class="badge bg-danger">Kapalı</span> }
-                        </td>
-                        <td class="text-end">
-                            <a asp-action="EditStudent" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <a asp-action="DeleteStudent" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bu öğrenciyi ve tüm notlarını silmek istediğinize emin misiniz?');"><i class="bi bi-trash"></i></a>
-                        </td>
+                        <th>Fotoğraf</th>
+                        <th>Öğrenci No</th>
+                        <th>Ad Soyad</th>
+                        <th>Kullanıcı Adı</th>
+                        <th>Kurtarma Kodu</th>
+                        <th>Yetki</th>
+                        <th class="text-end">İşlemler</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(s.User.PhotoUrl))
+                                {
+                                    <img src="@s.User.PhotoUrl" class="rounded-circle" width="40" height="40" style="object-fit:cover;border:2px solid rgba(99,102,241,0.3);" />
+                                }
+                                else
+                                {
+                                    <div style="width:40px;height:40px;border-radius:50%;background:rgba(99,102,241,0.15);display:flex;align-items:center;justify-content:center;color:#6366f1;">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <span class="fw-bold">@s.StudentNumber</span>
+                                <span class="badge-glass ms-1">@s.ClassSection</span>
+                            </td>
+                            <td class="fw-semibold">@s.User.FullName</td>
+                            <td><code style="color:#94a3b8;font-size:0.82rem;">@s.User.Username</code></td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(s.User.RecoveryPin))
+                                {
+                                    <span class="badge" style="background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3);font-family:monospace;font-size:0.85rem;letter-spacing:0.1em;padding:4px 10px;">
+                                        @s.User.RecoveryPin
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (s.User.CanChangePhoto)
+                                {
+                                    <span class="badge" style="background:rgba(16,185,129,0.15);color:#86efac;border:1px solid rgba(16,185,129,0.3);">Açık</span>
+                                }
+                                else
+                                {
+                                    <span class="badge" style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);">Kısıtlı</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a asp-action="EditStudent" asp-route-id="@s.Id" class="glass-btn glass-btn-sm glass-btn-info">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                    <a asp-action="DeleteStudent" asp-route-id="@s.Id" class="glass-btn glass-btn-sm glass-btn-danger"
+                                       onclick="return confirm('Bu öğrenciyi silmek istediğinize emin misiniz?')">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>

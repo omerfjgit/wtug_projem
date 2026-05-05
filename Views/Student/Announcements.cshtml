@@ -5,59 +5,138 @@
     Layout = "_LayoutStudent";
 }
 
-<div class="glass-card h-100">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="fw-bold m-0"><i class="bi bi-megaphone-fill text-warning me-2"></i> Tüm Duyurular</h5>
+<style>
+    .announcement-card {
+        background: rgba(30, 41, 59, 0.45);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+    .announcement-card:hover {
+        transform: translateY(-4px);
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .announcement-media-preview {
+        height: 160px;
+        width: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 1.25rem;
+        background: rgba(0,0,0,0.2);
+    }
+    .read-more-btn {
+        background: rgba(99, 102, 241, 0.1);
+        color: #a5b4fc;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 8px;
+        padding: 4px 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+    .read-more-btn:hover {
+        background: rgba(99, 102, 241, 0.2);
+        color: white;
+    }
+</style>
+
+<div class="glass-card">
+    <div class="mb-4">
+        <h4 class="fw-bold m-0"><i class="bi bi-megaphone-fill text-warning me-2"></i>Okul Duyuruları</h4>
+        <p class="text-muted small m-0">Okulumuzdan en son haberler ve önemli bildirimler.</p>
     </div>
-    
+
     <div class="row g-4">
         @if (!Model.Any())
         {
-            <div class="col-12 text-center text-muted py-5">
-                <i class="bi bi-bell-slash fs-1 d-block mb-3"></i>
-                Şu an için yayınlanmış bir duyuru bulunmuyor.
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-bell-slash text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-3">Şu an için yeni bir duyuru bulunmuyor.</p>
             </div>
         }
-        else
+        @foreach (var item in Model.OrderByDescending(a => a.CreatedAt))
         {
-            foreach (var announcement in Model)
-            {
-                var bgClass = "bg-secondary";
-                if(announcement.Category == "Sınav") bgClass = "bg-danger";
-                if(announcement.Category == "Etkinlik") bgClass = "bg-success";
-                if(announcement.Category == "Uyarı") bgClass = "bg-warning text-dark";
-                if(announcement.Category == "Genel") bgClass = "bg-primary";
-
-                <div class="col-12 col-md-6">
-                    <div class="p-4 border rounded h-100" style="background-color: var(--table-light-bg); border-color: var(--card-border) !important;">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="badge @bgClass">@announcement.Category</span>
-                            <small class="text-muted"><i class="bi bi-clock me-1"></i> @announcement.CreatedAt.ToString("dd MMM yyyy")</small>
-                        </div>
-                        <h5 class="fw-bold mb-3" style="color: var(--text-color);">@announcement.Title</h5>
-                        <p class="m-0" style="color: var(--text-color); opacity: 0.9; line-height: 1.6;">@announcement.Content</p>
-                        @if (!string.IsNullOrEmpty(announcement.MediaUrl))
-                        {
-                            <div class="mt-3">
-                                @if (announcement.MediaType == "image")
-                                {
-                                    <img src="@announcement.MediaUrl" class="img-fluid rounded" style="max-height:300px; object-fit:cover; width:100%;" />
-                                }
-                                else if (announcement.MediaType == "video")
-                                {
-                                    <video src="@announcement.MediaUrl" controls class="w-100 rounded" style="max-height:300px;"></video>
-                                }
-                                else
-                                {
-                                    <a href="@announcement.MediaUrl" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
-                                        <i class="bi bi-file-earmark-arrow-down me-1"></i> Eki İndir
-                                    </a>
-                                }
-                            </div>
+            <div class="col-xl-4 col-md-6">
+                <div class="announcement-card p-3 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        @{
+                            var bgClass = "rgba(148, 163, 184, 0.15)";
+                            var textColor = "#94a3b8";
+                            if (item.Category == "Sınav") { bgClass = "rgba(239, 68, 68, 0.15)"; textColor = "#fca5a5"; }
+                            else if (item.Category == "Etkinlik") { bgClass = "rgba(16, 185, 129, 0.15)"; textColor = "#86efac"; }
+                            else if (item.Category == "Uyarı") { bgClass = "rgba(245, 158, 11, 0.15)"; textColor = "#fcd34d"; }
+                            else if (item.Category == "Genel") { bgClass = "rgba(99, 102, 241, 0.15)"; textColor = "#a5b4fc"; }
                         }
+                        <span class="badge" style="background: @bgClass; color: @textColor; border: 1px solid rgba(255,255,255,0.05);">@item.Category</span>
+                        <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>@item.CreatedAt.ToString("dd MMM")</small>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(item.MediaUrl) && item.MediaType == "image")
+                    {
+                        <img src="@item.MediaUrl" class="announcement-media-preview" alt="media" />
+                    }
+
+                    <h6 class="fw-bold mb-2">@item.Title</h6>
+                    <p class="text-muted small line-clamp-3 mb-4 flex-grow-1" style="line-height: 1.6;">@item.Content</p>
+
+                    <div class="mt-auto">
+                        <button type="button" class="read-more-btn w-100 text-center" data-bs-toggle="modal" data-bs-target="#announcementModal-@item.Id">
+                            Devamını Oku <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
                     </div>
                 </div>
-            }
+            </div>
+
+            <!-- Modal for Full Content -->
+            <div class="modal fade modal-glass" id="announcementModal-@item.Id" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; color: white;">
+                        <div class="modal-header border-bottom-0">
+                            <span class="badge me-2" style="background: @bgClass; color: @textColor;">@item.Category</span>
+                            <h5 class="modal-title fw-bold">@item.Title</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 pt-2">
+                            @if (!string.IsNullOrEmpty(item.MediaUrl))
+                            {
+                                <div class="text-center mb-4">
+                                    @if (item.MediaType == "image")
+                                    {
+                                        <img src="@item.MediaUrl" class="img-fluid rounded-3 shadow" style="max-height: 500px; width: 100%; object-fit: contain; background: #000;" alt="media" />
+                                    }
+                                    else if (item.MediaType == "video")
+                                    {
+                                        <video src="@item.MediaUrl" controls class="w-100 rounded-3 shadow" style="max-height: 500px;"></video>
+                                    }
+                                    else
+                                    {
+                                        <a href="@item.MediaUrl" target="_blank" class="glass-btn glass-btn-sm">
+                                            <i class="bi bi-file-earmark-arrow-down me-2"></i>Eki İndir
+                                        </a>
+                                    }
+                                </div>
+                            }
+                            <div style="white-space: pre-wrap; line-height: 1.8; font-size: 1.05rem; color: rgba(255,255,255,0.9);">@item.Content</div>
+                        </div>
+                        <div class="modal-footer border-top-0 opacity-50 small">
+                            Yayınlanma: @item.CreatedAt.ToString("f")
+                        </div>
+                    </div>
+                </div>
+            </div>
         }
     </div>
 </div>

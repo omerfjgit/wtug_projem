@@ -46,13 +46,14 @@ namespace NoteTrackerApp.Controllers
             var newEvent = new CalendarEvent
             {
                 Title = title,
-                Date = date,
+                Date = DateTime.SpecifyKind(date, DateTimeKind.Utc),
                 Description = description
             };
 
             _context.CalendarEvents.Add(newEvent);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return Json(new { success = true, id = newEvent.Id, title = newEvent.Title, start = newEvent.Date.ToString("yyyy-MM-dd") });
         }
 
         [HttpPost]

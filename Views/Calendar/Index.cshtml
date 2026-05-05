@@ -6,133 +6,191 @@
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
 
-<div class="row">
-    <div class="col-12">
-        <div class="glass-card mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold m-0"><i class="bi bi-calendar3 text-info me-2"></i> @ViewData["Title"]</h4>
-                @if (role == "Admin")
-                {
-                    <button class="btn glass-btn fw-bold" data-bs-toggle="modal" data-bs-target="#addEventModal">
-                        <i class="bi bi-plus-lg"></i> Yeni Etkinlik
-                    </button>
-                }
-            </div>
-            
-            <div id="calendar" class="text-light"></div>
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold m-0"><i class="bi bi-calendar3 text-info me-2"></i>Okul Takvimi</h4>
+            <small class="text-muted">Millî bayramlar, tatiller ve okul etkinlikleri</small>
         </div>
+        @if (role == "Admin")
+        {
+            <button class="glass-btn" id="openAddEventBtn">
+                <i class="bi bi-plus-lg me-1"></i>Yeni Etkinlik
+            </button>
+        }
     </div>
+
+    <div id="calendar"></div>
 </div>
 
+<!-- Add Event Panel (Admin Only) -->
 @if (role == "Admin")
 {
-    <!-- Add Event Modal -->
-    <div class="modal fade" id="addEventModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); color: white;">
-                <div class="modal-header border-bottom border-secondary">
-                    <h5 class="modal-title fw-bold">Takvime Ekle</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form asp-action="AddEvent" method="post">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold">Etkinlik Adı</label>
-                            <input type="text" name="title" class="form-control" placeholder="Örn: 19 Mayıs Gençlik ve Spor Bayramı" required />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold">Tarih</label>
-                            <input type="date" name="date" class="form-control" required />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold">Açıklama (İsteğe Bağlı)</label>
-                            <textarea name="description" class="form-control" rows="3"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer border-top border-secondary">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
-                        <button type="submit" class="btn glass-btn">Kaydet</button>
-                    </div>
-                </form>
+    <div id="addEventPanel" class="glass-card mt-3" style="display:none;max-width:500px;">
+        <h6 class="fw-bold mb-3"><i class="bi bi-calendar-plus me-2"></i>Yeni Etkinlik Ekle</h6>
+        <div id="addEventFeedback" style="display:none;" class="mb-3 p-2 rounded" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#86efac;"></div>
+        <form id="addEventForm">
+            <div class="mb-3">
+                <label class="form-label">Etkinlik Adı</label>
+                <input type="text" id="evtTitle" class="form-control" placeholder="Örn: Veli Toplantısı" required />
             </div>
-        </div>
+            <div class="mb-3">
+                <label class="form-label">Tarih</label>
+                <input type="date" id="evtDate" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Açıklama (İsteğe Bağlı)</label>
+                <input type="text" id="evtDesc" class="form-control" placeholder="Kısa açıklama..." />
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="glass-btn glass-btn-sm">
+                    <i class="bi bi-check-lg me-1"></i>Kaydet
+                </button>
+                <button type="button" class="glass-btn glass-btn-sm glass-btn-danger" id="cancelAddEvent">
+                    <i class="bi bi-x-lg me-1"></i>İptal
+                </button>
+            </div>
+        </form>
     </div>
 }
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'tr',
-                themeSystem: 'bootstrap5',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,listWeek'
-                },
-                buttonText: {
-                    today: 'Bugün',
-                    month: 'Ay',
-                    week: 'Hafta',
-                    list: 'Liste'
-                },
-                events: '@Url.Action("GetEvents", "Calendar")',
-                eventClick: function(info) {
-                    @if (role == "Admin") {
-                        <text>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+
+        // Türkiye Millî Bayramları (JavaScript tarafında dinamik — cari yıl ± 3)
+        function getTurkishHolidays() {
+            var today = new Date();
+            var holidays = [];
+            for (var y = today.getFullYear() - 2; y <= today.getFullYear() + 3; y++) {
+                holidays.push(
+                    { title:'Yılbaşı', start: y+'-01-01', color:'#f59e0b', allDay:true, description:'Yeni Yıl Tatili' },
+                    { title:'23 Nisan — Çocuk Bayramı', start: y+'-04-23', color:'#6366f1', allDay:true, description:'Ulusal Egemenlik ve Çocuk Bayramı' },
+                    { title:'1 Mayıs — İşçi Bayramı', start: y+'-05-01', color:'#ef4444', allDay:true, description:'Emek ve Dayanışma Günü' },
+                    { title:'19 Mayıs — Gençlik Bayramı', start: y+'-05-19', color:'#10b981', allDay:true, description:'Atatürk\'ü Anma, Gençlik ve Spor Bayramı' },
+                    { title:'15 Temmuz — Demokrasi Günü', start: y+'-07-15', color:'#8b5cf6', allDay:true, description:'Demokrasi ve Milli Birlik Günü' },
+                    { title:'30 Ağustos — Zafer Bayramı', start: y+'-08-30', color:'#ec4899', allDay:true, description:'Zafer Bayramı' },
+                    { title:'29 Ekim — Cumhuriyet Bayramı', start: y+'-10-29', color:'#f97316', allDay:true, description:'Türkiye Cumhuriyeti\'nin Kuruluşu' },
+                    { title:'10 Kasım — Atatürk\'ü Anma', start: y+'-11-10', color:'#334155', allDay:true, description:'Büyük Atatürk\'ü saygı ve özlemle anıyoruz' }
+                );
+            }
+            return holidays;
+        }
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'tr',
+            themeSystem: 'bootstrap5',
+            height: 'auto',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listWeek'
+            },
+            buttonText: { today:'Bugün', month:'Ay', week:'Hafta', list:'Liste' },
+            events: function(info, successCallback, failureCallback) {
+                fetch('@Url.Action("GetEvents", "Calendar")')
+                    .then(r => r.json())
+                    .then(dbEvents => {
+                        var holidays = getTurkishHolidays();
+                        successCallback([...dbEvents, ...holidays]);
+                    })
+                    .catch(failureCallback);
+            },
+            eventClick: function(info) {
+                @if (role == "Admin") {
+                    <text>
+                    // Sadece DB'den gelen etkinlikleri silme (id'si olan)
+                    if (info.event.id && !isNaN(parseInt(info.event.id))) {
                         if (confirm("Bu etkinliği silmek istiyor musunuz?\n" + info.event.title)) {
                             var form = document.createElement('form');
                             form.method = 'POST';
                             form.action = '@Url.Action("DeleteEvent", "Calendar")';
-                            
                             var input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = 'id';
-                            input.value = info.event.id;
-                            
+                            input.type = 'hidden'; input.name = 'id'; input.value = info.event.id;
                             form.appendChild(input);
                             document.body.appendChild(form);
                             form.submit();
                         }
-                        </text>
                     } else {
-                        <text>
-                        alert("Etkinlik: " + info.event.title + "\nTarih: " + info.event.start.toLocaleDateString('tr-TR'));
-                        </text>
+                        var desc = info.event.extendedProps.description || '';
+                        alert("📅 " + info.event.title + (desc ? '\n\n' + desc : ''));
                     }
+                    </text>
+                } else {
+                    <text>
+                    var desc = info.event.extendedProps.description || '';
+                    alert("📅 " + info.event.title + "\n" + info.event.start.toLocaleDateString('tr-TR') + (desc ? '\n\n' + desc : ''));
+                    </text>
                 }
-            });
-            calendar.render();
+            }
         });
+        calendar.render();
+
+        @if (role == "Admin") {
+            <text>
+            // Panel toggle
+            document.getElementById('openAddEventBtn').addEventListener('click', function() {
+                document.getElementById('addEventPanel').style.display = 'block';
+                document.getElementById('openAddEventBtn').style.display = 'none';
+            });
+            document.getElementById('cancelAddEvent').addEventListener('click', function() {
+                document.getElementById('addEventPanel').style.display = 'none';
+                document.getElementById('openAddEventBtn').style.display = '';
+            });
+
+            // AJAX Submit
+            document.getElementById('addEventForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var title = document.getElementById('evtTitle').value;
+                var date  = document.getElementById('evtDate').value;
+                var desc  = document.getElementById('evtDesc').value;
+
+                var formData = new FormData();
+                formData.append('title', title);
+                formData.append('date', date);
+                formData.append('description', desc);
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+                fetch('@Url.Action("AddEvent", "Calendar")', { method:'POST', body:formData })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            calendar.addEvent({ id: data.id, title: data.title, start: data.start, allDay: true, color:'#38bdf8' });
+                            document.getElementById('addEventForm').reset();
+                            var fb = document.getElementById('addEventFeedback');
+                            fb.textContent = '✅ "' + data.title + '" takvime eklendi!';
+                            fb.style.display = 'block';
+                            fb.style.background = 'rgba(16,185,129,0.15)';
+                            fb.style.border = '1px solid rgba(16,185,129,0.3)';
+                            fb.style.color = '#86efac';
+                            fb.style.borderRadius = '8px';
+                            fb.style.padding = '8px 12px';
+                            setTimeout(() => { fb.style.display = 'none'; }, 3000);
+                        }
+                    })
+                    .catch(() => alert('Bir hata oluştu.'));
+            });
+            </text>
+        }
+    });
     </script>
 
     <style>
-        .fc-theme-bootstrap5 .fc-scrollgrid { border-color: rgba(255,255,255,0.1); }
-        .fc-theme-bootstrap5 th, .fc-theme-bootstrap5 td { border-color: rgba(255,255,255,0.1) !important; }
-        .fc-daygrid-day-number { color: #f8fafc; text-decoration: none; }
-        .fc-col-header-cell-cushion { color: #cbd5e1; text-decoration: none; }
-        .fc .fc-button-primary {
-            background: rgba(255,255,255,0.1);
-            border-color: rgba(255,255,255,0.2);
-            color: white;
-        }
-        .fc .fc-button-primary:not(:disabled):active, .fc .fc-button-primary:not(:disabled).fc-button-active {
-            background: #38bdf8;
-            border-color: #38bdf8;
-        }
-        [data-bs-theme="light"] .fc-daygrid-day-number, [data-bs-theme="light"] .fc-col-header-cell-cushion {
-            color: #334155;
-        }
-        [data-bs-theme="light"] .fc-theme-bootstrap5 .fc-scrollgrid, [data-bs-theme="light"] .fc-theme-bootstrap5 th, [data-bs-theme="light"] .fc-theme-bootstrap5 td {
-            border-color: rgba(0,0,0,0.1) !important;
-        }
-        [data-bs-theme="light"] .fc .fc-button-primary {
-            background: #0284c7;
-            border-color: #0284c7;
-            color: white;
-        }
+        .fc-theme-bootstrap5 .fc-scrollgrid { border-color:rgba(255,255,255,0.07); }
+        .fc-theme-bootstrap5 th, .fc-theme-bootstrap5 td { border-color:rgba(255,255,255,0.06) !important; }
+        .fc-daygrid-day-number { color:#f8fafc; text-decoration:none; }
+        .fc-col-header-cell-cushion { color:#94a3b8; text-decoration:none; }
+        .fc .fc-button-primary { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.15); color:white; border-radius:8px; }
+        .fc .fc-button-primary:not(:disabled):active, .fc .fc-button-primary:not(:disabled).fc-button-active { background:#6366f1; border-color:#6366f1; }
+        .fc .fc-button-primary:hover { background:rgba(99,102,241,0.2); border-color:rgba(99,102,241,0.3); }
+        .fc-event { border-radius:5px; font-size:0.78rem; border:none !important; }
+        .fc-daygrid-event-dot { display:none !important; }
+
+        [data-bs-theme="light"] .fc-daygrid-day-number, [data-bs-theme="light"] .fc-col-header-cell-cushion { color:#1e293b; }
+        [data-bs-theme="light"] .fc-theme-bootstrap5 th, [data-bs-theme="light"] .fc-theme-bootstrap5 td { border-color:rgba(0,0,0,0.07) !important; }
+        [data-bs-theme="light"] .fc .fc-button-primary { background:#6366f1; border-color:#6366f1; color:white; }
     </style>
 }

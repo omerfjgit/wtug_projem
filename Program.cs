@@ -8,31 +8,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// ── Veritabanı bağlantısı: Render'da DATABASE_URL (PostgreSQL), lokalde MySQL ──
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-if (!string.IsNullOrEmpty(databaseUrl))
+// ── Veritabanı bağlantısı: MySQL ──
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (string.IsNullOrEmpty(connectionString))
 {
-    // Render.com: DATABASE_URL ortam değişkeni varsa PostgreSQL kullan
-    // Render'ın postgres:// URL'ini Npgsql formatına çevir
-    var uri = new Uri(databaseUrl);
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+else if (connectionString.StartsWith("mysql://", StringComparison.OrdinalIgnoreCase))
+{
+    var uri = new Uri(connectionString);
     var host = uri.Host;
-    var port = uri.Port;
+    var port = uri.Port > 0 ? uri.Port : 3306;
     var db = uri.AbsolutePath.TrimStart('/');
-    var user = uri.UserInfo.Split(':')[0];
-    var password = uri.UserInfo.Split(':')[1];
-    var pgConnStr = $"Host={host};Port={port};Database={db};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    var userInfo = uri.UserInfo.Split(':');
+    var user = userInfo.Length > 0 ? userInfo[0] : "";
+    var password = userInfo.Length > 1 ? userInfo[1] : "";
+    connectionString = $"Server={host};Port={port};Database={db};Uid={user};Pwd={password};";
+}
 
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(pgConnStr));
-}
-else
-{
-    // Lokal geliştirme: appsettings.json'daki MySQL bağlantısı
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-}
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 // Add Cookie Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -52,6 +47,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<NoteTrackerApp.Data.AppDbContext>();
     db.Database.Migrate();
     await StudentSeeder.SeedAsync(db);
+    await GradeSeeder.SeedAsync(db);
 }
 
 // Configure the HTTP request pipeline.

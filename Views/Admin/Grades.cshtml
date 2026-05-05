@@ -1,57 +1,72 @@
-@model IEnumerable<NoteTrackerApp.Models.Grade>
-
+@model List<NoteTrackerApp.Models.Grade>
 @{
-    ViewData["Title"] = "Not Kayıtları";
+    ViewData["Title"] = "Not Girişi";
     Layout = "_LayoutAdmin";
+    var search = ViewBag.Search as string ?? "";
 }
 
 <div class="glass-card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="m-0 fw-bold">Tüm Öğrenci Notları</h5>
-        <a asp-action="CreateGrade" class="btn btn-sm btn-primary"><i class="bi bi-plus"></i> Not Girişi Yap</a>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold m-0"><i class="bi bi-journal-check text-primary me-2"></i>Tüm Öğrenci Notları</h4>
+            <small class="text-muted">@Model.Count kayıt</small>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <form method="get" class="d-flex" style="min-width:260px;">
+                <div class="input-group">
+                    <span class="input-group-text" style="background:rgba(30,41,59,0.5);border-color:rgba(255,255,255,0.1);color:#6366f1;">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" value="@search" class="form-control" placeholder="Öğrenci, ders, sınıf..." />
+                    <button class="glass-btn glass-btn-sm" type="submit"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+            <a asp-action="CreateGrade" class="glass-btn">
+                <i class="bi bi-plus-lg"></i> Not Girişi Yap
+            </a>
+        </div>
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover align-middle table-sm">
-            <thead class="table-light">
+        <table class="table table-hover">
+            <thead>
                 <tr>
                     <th>Öğrenci</th>
                     <th>Ders</th>
                     <th>Dönem</th>
-                    <th>S1</th>
-                    <th>S2</th>
-                    <th>Söz1</th>
-                    <th>Söz2</th>
-                    <th>Per1</th>
-                    <th>Per2</th>
-                    <th>Proje</th>
-                    <th>Ort</th>
-                    <th>Durum</th>
+                    <th>S1</th><th>S2</th><th>Söz1</th><th>Söz2</th>
+                    <th>Per1</th><th>Per2</th><th>Proje</th>
+                    <th>Ort</th><th>Durum</th>
                 </tr>
             </thead>
             <tbody>
-                @if(!Model.Any()) {
-                    <tr><td colspan="12" class="text-center text-muted py-3">Henüz not kaydı yok.</td></tr>
-                }
-                @foreach (var item in Model) {
+                @foreach (var g in Model)
+                {
                     <tr>
                         <td>
-                            <div class="fw-bold">@item.Student.User.FullName</div>
-                            <small class="text-muted">No: @item.Student.StudentNumber</small>
+                            <div class="fw-semibold" style="font-size:0.88rem;">@g.Student.User.FullName</div>
+                            <div class="text-muted" style="font-size:0.75rem;">No: @g.Student.StudentNumber</div>
                         </td>
-                        <td><span class="badge bg-secondary">@item.CourseName</span></td>
-                        <td>@item.Semester</td>
-                        <td>@(item.Exam1?.ToString("0.##") ?? "-")</td>
-                        <td>@(item.Exam2?.ToString("0.##") ?? "-")</td>
-                        <td>@(item.Oral1?.ToString("0.##") ?? "-")</td>
-                        <td>@(item.Oral2?.ToString("0.##") ?? "-")</td>
-                        <td>@(item.Performance1?.ToString("0.##") ?? "-")</td>
-                        <td>@(item.Performance2?.ToString("0.##") ?? "-")</td>
-                        <td>@(item.Project?.ToString("0.##") ?? "-")</td>
-                        <td class="fw-bold text-primary">@item.Average.ToString("0.00")</td>
+                        <td><span class="badge-glass">@g.CourseName</span></td>
+                        <td><small class="text-muted">@g.Semester</small></td>
+                        <td>@g.Exam1</td><td>@g.Exam2</td>
+                        <td style="color:#38bdf8;">@g.Oral1</td><td style="color:#38bdf8;">@g.Oral2</td>
+                        <td>@g.Performance1</td><td>@g.Performance2</td>
+                        <td>@(g.Project?.ToString() ?? "—")</td>
                         <td>
-                            @if(item.IsPassed) { <span class="badge bg-success">Geçti</span> }
-                            else { <span class="badge bg-danger">Kaldı</span> }
+                            <span style="color:@(g.Average >= 70 ? "#86efac" : g.Average >= 50 ? "#fbbf24" : "#fca5a5"); font-weight:700;">
+                                @g.Average
+                            </span>
+                        </td>
+                        <td>
+                            @if (g.IsPassed)
+                            {
+                                <span class="badge" style="background:rgba(16,185,129,0.15);color:#86efac;border:1px solid rgba(16,185,129,0.3);">Geçti</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);">Kaldı</span>
+                            }
                         </td>
                     </tr>
                 }

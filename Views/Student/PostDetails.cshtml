@@ -1,140 +1,142 @@
 @model NoteTrackerApp.Models.Post
-
 @{
-    ViewData["Title"] = "Gönderi Detayı";
+    ViewData["Title"] = "Tartışma Detayı";
     Layout = "_LayoutStudent";
+    int currentUserId = ViewBag.CurrentUserId;
+    var userLikes = ViewBag.UserLikes as List<NoteTrackerApp.Models.PostLike> ?? new();
+    var postLike = userLikes.FirstOrDefault(l => l.PostId == Model.Id);
+    var topLevelComments = Model.Comments.Where(c => c.ParentCommentId == null).OrderByDescending(c => c.CreatedAt).ToList();
+    var sort = ViewBag.Sort as string ?? "newest";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <!-- Orijinal Gönderi -->
-        <div class="glass-card mb-4" style="border-left: 4px solid #4f46e5;">
-            <div class="d-flex align-items-start mb-3">
-                @if (string.IsNullOrEmpty(Model.User.PhotoUrl))
-                {
-                    <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem;" class="me-3">
-                        @Model.User.FullName.Substring(0, 1).ToUpper()
-                    </div>
-                }
-                else
-                {
-                    <img src="@Model.User.PhotoUrl" alt="Profil" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;" class="me-3" />
-                }
-                <div>
-                    <h5 class="fw-bold m-0" style="color: var(--text-color);">
-                        @Model.User.FullName
-                        @if(Model.User.Role == "Admin") { <i class="bi bi-patch-check-fill text-primary ms-1 small" title="Yönetici"></i> }
-                    </h5>
-                    <small class="text-muted">
-                        @(string.IsNullOrEmpty(Model.TargetClass) ? "Tüm Okul" : $"{Model.TargetClass} Sınıfı") • @Model.CreatedAt.ToString("dd MMM yyyy HH:mm")
-                    </small>
-                </div>
-            </div>
-            
-            <p class="fs-5 mb-3" style="color: var(--text-color);">@Model.Content</p>
-            
-            @if (!string.IsNullOrEmpty(Model.MediaUrl))
+<div style="max-width:800px;margin:0 auto;">
+    <div class="mb-3">
+        <a asp-action="Discussions" class="glass-btn glass-btn-sm">
+            <i class="bi bi-arrow-left"></i> Geri
+        </a>
+    </div>
+
+    <!-- Post -->
+    <div class="glass-card mb-3">
+        <div class="d-flex align-items-start gap-3 mb-3">
+            @if (!string.IsNullOrEmpty(Model.User.PhotoUrl))
             {
-                <div class="mb-3">
-                    @if (Model.MediaType == "image")
-                    {
-                        <img src="@Model.MediaUrl" class="img-fluid rounded" style="max-height:400px; object-fit:cover; width:100%;" />
-                    }
-                    else if (Model.MediaType == "video")
-                    {
-                        <video src="@Model.MediaUrl" controls class="w-100 rounded" style="max-height:400px;"></video>
-                    }
-                    else
-                    {
-                        <a href="@Model.MediaUrl" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-file-earmark-arrow-down me-1"></i> Eki İndir
-                        </a>
-                    }
+                <img src="@Model.User.PhotoUrl" class="rounded-circle" width="44" height="44" style="object-fit:cover;border:2px solid rgba(99,102,241,0.3);" />
+            }
+            else
+            {
+                <div style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.15);display:flex;align-items:center;justify-content:center;color:#6366f1;flex-shrink:0;">
+                    <i class="bi bi-person-fill"></i>
                 </div>
             }
-            
-            <div class="d-flex gap-4 border-top pt-3" style="border-color: var(--card-border) !important; opacity: 0.8;">
-                <span class="text-muted small fw-bold"><i class="bi bi-chat-left-text me-1"></i> @Model.Comments.Count Yorum</span>
-                @{
-                    var uniqueViewCount = Model.Views.Select(v => v.UserId).Distinct().Count();
-                    var uniqueViewers = Model.Views.GroupBy(v => v.UserId).Select(g => g.First()).Take(10).ToList();
-                }
-                <span class="text-muted small fw-bold" data-bs-toggle="tooltip" title="@string.Join(", ", uniqueViewers.Select(v => v.User?.FullName ?? "Bilinmeyen")) @(uniqueViewCount > 10 ? "ve daha fazlası..." : "")">
-                    <i class="bi bi-eye me-1"></i> @uniqueViewCount Görüntülenme
-                </span>
-            </div>
-        </div>
-
-        <!-- Yorum Ekleme Kutusu -->
-        <div class="glass-card mb-4">
-            <form asp-action="AddComment" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="postId" value="@Model.Id" />
-                <div class="mb-2">
-                    <textarea name="content" class="form-control" rows="2" placeholder="Yanıtınızı yazın..." required style="resize: none;"></textarea>
-                </div>
-                <div class="d-flex gap-2 align-items-center justify-content-between">
-                    <label class="d-flex align-items-center gap-2 text-muted small" style="cursor:pointer;">
-                        <i class="bi bi-paperclip fs-5"></i>
-                        <input type="file" name="mediaFile" class="d-none" />
-                        <span id="fileNameDisplay">Medya Ekle</span>
-                    </label>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">Yanıtla <i class="bi bi-send ms-1"></i></button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Yorumlar Listesi -->
-        <h6 class="fw-bold mb-3 ms-2 text-muted">Yorumlar (@Model.Comments.Count)</h6>
-        
-        @foreach (var comment in Model.Comments.OrderBy(c => c.CreatedAt))
-        {
-            <div class="glass-card mb-3 p-3">
-                <div class="d-flex gap-3">
-                    @if (string.IsNullOrEmpty(comment.User.PhotoUrl))
-                    {
-                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #64748b; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0;">
-                            @comment.User.FullName.Substring(0, 1).ToUpper()
-                        </div>
-                    }
-                    else
-                    {
-                        <img src="@comment.User.PhotoUrl" alt="Profil" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
-                    }
-                    
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-bold" style="color: var(--text-color);">
-                                @comment.User.FullName
-                                @if(comment.User.Role == "Admin") { <i class="bi bi-patch-check-fill text-primary ms-1 small"></i> }
-                            </span>
-                            <small class="text-muted">@comment.CreatedAt.ToString("HH:mm - dd MMM")</small>
-                        </div>
-                        <p class="m-0 small" style="color: var(--text-color); opacity: 0.9;">@comment.Content</p>
-                        
-                        @if (!string.IsNullOrEmpty(comment.MediaUrl))
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold">@Model.User.FullName</span>
+                        <span class="text-muted ms-1" style="font-size:0.78rem;">@Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</span>
+                        @if (!string.IsNullOrEmpty(Model.TargetClass))
                         {
-                            <div class="mt-2">
-                                @if (comment.MediaType == "image") { <img src="@comment.MediaUrl" class="img-fluid rounded" style="max-height:200px; object-fit:cover;" /> }
-                                else if (comment.MediaType == "video") { <video src="@comment.MediaUrl" controls class="w-100 rounded" style="max-height:200px;"></video> }
-                                else { <a href="@comment.MediaUrl" target="_blank" class="btn btn-sm btn-outline-secondary mt-1"><i class="bi bi-file-earmark me-1"></i> Dosyayı Gör</a> }
-                            </div>
+                            <span class="badge-glass ms-2">@Model.TargetClass</span>
                         }
                     </div>
+                    @if (Model.UserId == currentUserId)
+                    {
+                        <form asp-action="DeletePost" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="glass-btn glass-btn-sm glass-btn-danger"
+                                    onclick="return confirm('Tartışmayı silmek istiyor musunuz?')">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </form>
+                    }
                 </div>
+                <p class="mt-2 mb-0">@Model.Content</p>
             </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.MediaUrl) && Model.MediaType == "image")
+        {
+            <img src="@Model.MediaUrl" class="img-fluid rounded mb-3 cursor-pointer"
+                 style="max-height:400px;width:auto;border:1px solid rgba(255,255,255,0.07);cursor:zoom-in;"
+                 onclick="document.getElementById('imgModal').style.display='flex';document.getElementById('imgModalSrc').src=this.src" />
+        }
+
+        <div class="d-flex align-items-center gap-3">
+            <form asp-action="LikePost" method="post" class="d-inline">
+                <input type="hidden" name="postId" value="@Model.Id" />
+                <input type="hidden" name="isLike" value="true" />
+                <button type="submit" class="glass-btn glass-btn-sm @(postLike?.IsLike == true ? "glass-btn-success" : "")">
+                    <i class="bi bi-hand-thumbs-up-fill"></i> @Model.Likes.Count(l => l.IsLike)
+                </button>
+            </form>
+            <form asp-action="LikePost" method="post" class="d-inline">
+                <input type="hidden" name="postId" value="@Model.Id" />
+                <input type="hidden" name="isLike" value="false" />
+                <button type="submit" class="glass-btn glass-btn-sm @(postLike?.IsLike == false ? "glass-btn-danger" : "")">
+                    <i class="bi bi-hand-thumbs-down-fill"></i> @Model.Likes.Count(l => !l.IsLike)
+                </button>
+            </form>
+            <small class="text-muted"><i class="bi bi-eye me-1"></i>@Model.Views.Count</small>
+            <small class="text-muted"><i class="bi bi-chat-square me-1"></i>@Model.Comments.Count</small>
+        </div>
+    </div>
+
+    <!-- Yorum Formu -->
+    <div class="glass-card mb-3">
+        <h6 class="fw-bold mb-3">Yorum Yap</h6>
+        <form asp-action="AddComment" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="postId" value="@Model.Id" />
+            <input type="hidden" name="parentCommentId" value="" />
+            <textarea name="content" class="form-control mb-2" rows="2" placeholder="Yorumunuzu yazın..."></textarea>
+            <div class="d-flex gap-2 flex-wrap">
+                <input type="file" name="mediaFile" class="form-control" style="max-width:260px;" />
+                <button type="submit" class="glass-btn glass-btn-sm">
+                    <i class="bi bi-send-fill me-1"></i>Gönder
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sıralama + Yorumlar -->
+    <div class="glass-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold m-0">Yorumlar (@Model.Comments.Count)</h6>
+            <div class="d-flex gap-2">
+                <a asp-action="PostDetails" asp-route-id="@Model.Id" asp-route-sort="newest"
+                   class="glass-btn glass-btn-sm @(sort == "newest" ? "glass-btn-success" : "")">
+                    <i class="bi bi-clock"></i> En Yeni
+                </a>
+                <a asp-action="PostDetails" asp-route-id="@Model.Id" asp-route-sort="popular"
+                   class="glass-btn glass-btn-sm @(sort == "popular" ? "glass-btn-success" : "")">
+                    <i class="bi bi-fire"></i> En Popüler
+                </a>
+            </div>
+        </div>
+
+        @{
+            var sortedComments = sort == "popular"
+                ? topLevelComments.OrderByDescending(c => c.Likes.Count(l => l.IsLike)).ToList()
+                : topLevelComments.OrderByDescending(c => c.CreatedAt).ToList();
+        }
+
+        @foreach (var comment in sortedComments)
+        {
+            <partial name="_CommentPartial" model="@(new NoteTrackerApp.Helpers.CommentViewModel {
+                Comment = comment, PostId = Model.Id,
+                CurrentUserId = currentUserId,
+                UserLikes = userLikes,
+                IsAdmin = false })" />
         }
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Tooltip
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
-        
-        // Dosya adı göster
-        document.querySelector('input[type="file"]')?.addEventListener('change', function() {
-            document.getElementById('fileNameDisplay').textContent = this.files[0]?.name || 'Medya Ekle';
-        });
-    </script>
-}
+<!-- Image Modal -->
+<div id="imgModal" onclick="this.style.display='none'"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;">
+    <img id="imgModalSrc" src="" style="max-width:95vw;max-height:95vh;border-radius:12px;box-shadow:0 0 60px rgba(0,0,0,0.8);" />
+</div>
+
+<style>
+    .badge-glass { background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:2px 8px;font-size:0.72rem;font-weight:600; }
+    [data-bs-theme="light"] .badge-glass { background:rgba(99,102,241,0.08);color:#4338ca; }
+</style>

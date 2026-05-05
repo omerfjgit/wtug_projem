@@ -1,0 +1,147 @@
+@model List<NoteTrackerApp.Models.PerformanceCriteria>
+@{
+    ViewData["Title"] = "Performans Takibi";
+    Layout = "_LayoutAdmin";
+    var students = ViewBag.Students as List<NoteTrackerApp.Models.Student>;
+    var search = ViewBag.Search as string ?? "";
+}
+
+<!-- Add Form -->
+<div class="glass-card mb-4">
+    <button class="glass-btn glass-btn-sm mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#addPerfForm">
+        <i class="bi bi-plus-lg me-1"></i>Yeni Performans Kriteri Ekle
+    </button>
+
+    <div class="collapse" id="addPerfForm">
+        <form asp-action="CreatePerformanceCriteria" method="post">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Öğrenci</label>
+                    <select name="StudentId" class="form-select" required>
+                        <option value="">Öğrenci Seç...</option>
+                        @foreach (var s in students ?? new())
+                        {
+                            <option value="@s.Id">@s.User.FullName (@s.ClassSection)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Ders</label>
+                    <input type="text" name="CourseName" class="form-control" placeholder="Türkçe, Matematik..." required />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Dönem</label>
+                    <select name="Semester" class="form-select">
+                        <option>1. Dönem</option>
+                        <option>2. Dönem</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Öğretmen Notu</label>
+                    <input type="text" name="Notes" class="form-control" placeholder="İsteğe bağlı..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Derse Katılım (0-10)</label>
+                    <input type="number" name="Participation" min="0" max="10" class="form-control" value="5" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Ödev Yapma (0-10)</label>
+                    <input type="number" name="HomeworkCompletion" min="0" max="10" class="form-control" value="5" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Kılık Kıyafet / Tutum (0-10)</label>
+                    <input type="number" name="Appearance" min="0" max="10" class="form-control" value="5" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Materyal Getirme (0-10)</label>
+                    <input type="number" name="MaterialReady" min="0" max="10" class="form-control" value="5" />
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="glass-btn"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tablo -->
+<div class="glass-card">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold m-0"><i class="bi bi-bar-chart-steps text-primary me-2"></i>Performans Kriterleri</h4>
+            <small class="text-muted">@Model.Count kayıt — Sözlü notunun alt kırılımları</small>
+        </div>
+        <form method="get" class="d-flex" style="min-width:240px;">
+            <div class="input-group">
+                <span class="input-group-text" style="background:rgba(30,41,59,0.5);border-color:rgba(255,255,255,0.1);color:#6366f1;">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="search" value="@search" class="form-control" placeholder="Öğrenci veya ders..." />
+                <button class="glass-btn glass-btn-sm" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Öğrenci</th>
+                    <th>Ders</th>
+                    <th>Dönem</th>
+                    <th title="Derse Katılım">Katılım</th>
+                    <th title="Ödev Yapma">Ödev</th>
+                    <th title="Kılık Kıyafet / Tutum">Kılık</th>
+                    <th title="Materyal Getirme">Materyal</th>
+                    <th>Toplam</th>
+                    <th>Not</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold" style="font-size:0.88rem;">@p.Student.User.FullName</div>
+                            <div class="text-muted" style="font-size:0.75rem;">@p.Student.ClassSection</div>
+                        </td>
+                        <td><span class="badge-glass">@p.CourseName</span></td>
+                        <td><small class="text-muted">@p.Semester</small></td>
+                        <td>@ScorePill(p.Participation)</td>
+                        <td>@ScorePill(p.HomeworkCompletion)</td>
+                        <td>@ScorePill(p.Appearance)</td>
+                        <td>@ScorePill(p.MaterialReady)</td>
+                        <td>
+                            <span style="font-weight:700;color:@(p.ScorePercent >= 70 ? "#86efac" : p.ScorePercent >= 50 ? "#fbbf24" : "#fca5a5")">
+                                @p.TotalScore/40 (@p.ScorePercent%)
+                            </span>
+                        </td>
+                        <td><small class="text-muted">@(p.Notes ?? "—")</small></td>
+                        <td>
+                            <form asp-action="DeletePerformanceCriteria" method="post">
+                                <input type="hidden" name="id" value="@p.Id" />
+                                <button type="submit" class="glass-btn glass-btn-sm glass-btn-danger"
+                                        onclick="return confirm('Silmek istiyor musunuz?')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@{
+    string ScorePill(int score)
+    {
+        var color = score >= 8 ? "#86efac" : score >= 5 ? "#fbbf24" : "#fca5a5";
+        return $"<span style=\"font-weight:600;color:{color}\">{score}/10</span>";
+    }
+}
+
+<style>
+    .badge-glass { background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:2px 8px;font-size:0.72rem;font-weight:600; }
+</style>

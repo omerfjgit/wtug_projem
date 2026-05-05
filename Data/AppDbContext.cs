@@ -18,12 +18,33 @@ namespace NoteTrackerApp.Data
         public DbSet<Post> Posts { get; set; }
         public DbSet<PostComment> PostComments { get; set; }
         public DbSet<PostView> PostViews { get; set; }
+        public DbSet<PostLike> PostLikes { get; set; }
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
+        public DbSet<PerformanceCriteria> PerformanceCriterias { get; set; }
+        public DbSet<ProjectAssignment> ProjectAssignments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
+            // Self-referencing PostComment (nested replies) — cycle'ı engelle
+            modelBuilder.Entity<PostComment>()
+                .HasOne(c => c.ParentComment)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(c => c.ParentCommentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // PostLike: bir kullanıcı bir gönderi veya yoruma yalnızca bir kez oy verebilir
+            modelBuilder.Entity<PostLike>()
+                .HasIndex(l => new { l.UserId, l.PostId })
+                .IsUnique()
+                .HasFilter("`PostId` IS NOT NULL");
+
+            modelBuilder.Entity<PostLike>()
+                .HasIndex(l => new { l.UserId, l.CommentId })
+                .IsUnique()
+                .HasFilter("`CommentId` IS NOT NULL");
+
             var adminUser = new AppUser 
             { 
                 Id = 1, 
@@ -39,7 +60,6 @@ namespace NoteTrackerApp.Data
             modelBuilder.Entity<AppUser>().HasData(adminUser);
 
             // Seed Turkish National Holidays & School Important Dates
-            // DateTime.SpecifyKind = UTC required for PostgreSQL (Npgsql)
             static DateTime UTC(int y, int m, int d) => DateTime.SpecifyKind(new DateTime(y, m, d), DateTimeKind.Utc);
 
             modelBuilder.Entity<CalendarEvent>().HasData(

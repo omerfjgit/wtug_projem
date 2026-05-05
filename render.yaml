@@ -1,9 +1,3 @@
-databases:
-  - name: notetracker-db
-    databaseName: notetracker
-    user: notetracker_user
-    plan: free
-
 services:
   - type: web
     name: notetracker-app
@@ -12,8 +6,6 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: notetracker-db
-          property: connectionString
+        value: "mysql://user:pass@host:port/dbname" # Değiştirilmesi gerekiyor
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
