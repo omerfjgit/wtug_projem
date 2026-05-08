@@ -243,6 +243,49 @@ namespace NoteTrackerApp.Controllers
             return RedirectToAction(nameof(Grades));
         }
 
+        public async Task<IActionResult> EditGrade(int id)
+        {
+            var grade = await _context.Grades.Include(g => g.Student).ThenInclude(s => s.User).FirstOrDefaultAsync(g => g.Id == id);
+            if (grade == null) return NotFound();
+            ViewBag.Students = await _context.Students.Include(s => s.User).ToListAsync();
+            return View(grade);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditGrade(Grade updatedGrade)
+        {
+            var grade = await _context.Grades.FindAsync(updatedGrade.Id);
+            if (grade == null) return NotFound();
+
+            grade.StudentId = updatedGrade.StudentId;
+            grade.CourseName = updatedGrade.CourseName;
+            grade.Semester = updatedGrade.Semester;
+            grade.Exam1 = updatedGrade.Exam1;
+            grade.Exam2 = updatedGrade.Exam2;
+            grade.Oral1 = updatedGrade.Oral1;
+            grade.Oral2 = updatedGrade.Oral2;
+            grade.Performance1 = updatedGrade.Performance1;
+            grade.Performance2 = updatedGrade.Performance2;
+            grade.Project = updatedGrade.Project;
+
+            grade.CalculateAverage();
+            
+            _context.Update(grade);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Grades));
+        }
+
+        public async Task<IActionResult> DeleteGrade(int id)
+        {
+            var grade = await _context.Grades.FindAsync(id);
+            if (grade != null)
+            {
+                _context.Grades.Remove(grade);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Grades));
+        }
+
         // ─── PERFORMANCE CRITERIA ────────────────────────────────────────────────
         public async Task<IActionResult> PerformanceCriteria(string? search)
         {

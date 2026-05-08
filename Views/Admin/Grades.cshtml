@@ -14,11 +14,8 @@
         <div class="d-flex gap-2 flex-wrap">
             <form method="get" class="d-flex" style="min-width:260px;">
                 <div class="input-group">
-                    <span class="input-group-text" style="background:rgba(30,41,59,0.5);border-color:rgba(255,255,255,0.1);color:#6366f1;">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" name="search" value="@search" class="form-control" placeholder="Öğrenci, ders, sınıf..." />
-                    <button class="glass-btn glass-btn-sm" type="submit"><i class="bi bi-search"></i></button>
+                    <input type="text" name="search" value="@search" class="form-control" placeholder="Öğrenci, ders, sınıf..." style="border-radius: 10px 0 0 10px;" />
+                    <button class="glass-btn glass-btn-sm" type="submit" style="border-radius: 0 10px 10px 0;"><i class="bi bi-search"></i></button>
                 </div>
             </form>
             <a asp-action="CreateGrade" class="glass-btn">
@@ -37,6 +34,7 @@
                     <th>S1</th><th>S2</th><th>Söz1</th><th>Söz2</th>
                     <th>Per1</th><th>Per2</th><th>Proje</th>
                     <th>Ort</th><th>Durum</th>
+                    <th class="text-end">İşlemler</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,6 +65,17 @@
                             {
                                 <span class="badge" style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);">Kaldı</span>
                             }
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a asp-action="EditGrade" asp-route-id="@g.Id" class="glass-btn glass-btn-sm glass-btn-info" title="Düzenle">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a asp-action="DeleteGrade" asp-route-id="@g.Id" class="glass-btn glass-btn-sm glass-btn-danger"
+                                   onclick="return confirm('Bu not kaydını silmek istediğinize emin misiniz?')" title="Sil">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 }

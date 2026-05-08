@@ -64,13 +64,16 @@
             border:1px solid rgba(255,255,255,0.12);
             color:white; border-radius:12px;
             padding:0.7rem 1rem;
-            transition:all 0.3s;
+            letter-spacing: 0.5px;
+            transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .form-control:focus {
             background:rgba(255,255,255,0.1);
             border-color:#6366f1;
             color:white;
             box-shadow:0 0 0 3px rgba(99,102,241,0.25);
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 8px rgba(99,102,241,0.6);
         }
         .form-control::placeholder { color:rgba(255,255,255,0.3); }
         .input-group-text {

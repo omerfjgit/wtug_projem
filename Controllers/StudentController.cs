@@ -40,6 +40,11 @@ namespace NoteTrackerApp.Controllers
                 .GroupBy(g => g.CourseName)
                 .ToDictionary(g => g.Key, g => (double)g.Average(x => x.Average));
 
+            ViewBag.Projects = await _context.ProjectAssignments
+                .Where(p => p.StudentId == student.Id)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
             return View(student);
         }
 

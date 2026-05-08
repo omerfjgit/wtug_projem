@@ -14,11 +14,8 @@
         <div class="d-flex gap-2 flex-wrap">
             <form method="get" class="d-flex" style="min-width:260px;">
                 <div class="input-group">
-                    <span class="input-group-text" style="background:rgba(30,41,59,0.5);border-color:rgba(255,255,255,0.1);color:#6366f1;">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" name="search" value="@search" class="form-control" placeholder="Ad, numara, sınıf..." />
-                    <button class="glass-btn glass-btn-sm" type="submit"><i class="bi bi-search"></i></button>
+                    <input type="text" name="search" value="@search" class="form-control" placeholder="Ad, numara, sınıf..." style="border-radius: 10px 0 0 10px;" />
+                    <button class="glass-btn glass-btn-sm" type="submit" style="border-radius: 0 10px 10px 0;"><i class="bi bi-search"></i></button>
                 </div>
             </form>
             <a asp-action="CreateStudent" class="glass-btn">

@@ -108,10 +108,10 @@
                         </td>
                         <td><span class="badge-glass">@p.CourseName</span></td>
                         <td><small class="text-muted">@p.Semester</small></td>
-                        <td>@ScorePill(p.Participation)</td>
-                        <td>@ScorePill(p.HomeworkCompletion)</td>
-                        <td>@ScorePill(p.Appearance)</td>
-                        <td>@ScorePill(p.MaterialReady)</td>
+                        <td>@Html.Raw(ScorePill(p.Participation))</td>
+                        <td>@Html.Raw(ScorePill(p.HomeworkCompletion))</td>
+                        <td>@Html.Raw(ScorePill(p.Appearance))</td>
+                        <td>@Html.Raw(ScorePill(p.MaterialReady))</td>
                         <td>
                             <span style="font-weight:700;color:@(p.ScorePercent >= 70 ? "#86efac" : p.ScorePercent >= 50 ? "#fbbf24" : "#fca5a5")">
                                 @p.TotalScore/40 (@p.ScorePercent%)

@@ -48,7 +48,16 @@
     <!-- Notlar Tablosu -->
     <div class="col-md-8">
         <div class="glass-card h-100">
-            <h5 class="fw-bold mb-4"><i class="bi bi-journal-check text-success me-2"></i> Dönem Notları</h5>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold m-0"><i class="bi bi-journal-check text-success me-2"></i> Dönem Notları</h5>
+                @if (Model.Grades != null && Model.Grades.Any())
+                {
+                    var totalAvg = Model.Grades.Average(g => g.Average);
+                    <span class="badge" style="background: rgba(16,185,129,0.15); color: #86efac; border: 1px solid rgba(16,185,129,0.3); font-size: 0.9rem; padding: 6px 12px;">
+                        Genel Ortalama: @totalAvg.ToString("0.00")
+                    </span>
+                }
+            </div>
             
             @if (Model.Grades != null && Model.Grades.Any())
             {
@@ -115,6 +124,71 @@
                 <div class="text-center text-muted py-5">
                     <i class="bi bi-folder2-open fs-1 d-block mb-3"></i>
                     Henüz not girişi yapılmamış.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Projeler Tablosu -->
+    <div class="col-md-12">
+        <div class="glass-card">
+            <h5 class="fw-bold mb-4"><i class="bi bi-folder2-open text-warning me-2"></i> Proje Ödevlerim</h5>
+            
+            @{
+                var projects = ViewBag.Projects as List<NoteTrackerApp.Models.ProjectAssignment>;
+            }
+            
+            @if (projects != null && projects.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" style="color: var(--text-color);">
+                        <thead style="background-color: var(--table-light-bg);">
+                            <tr>
+                                <th>Ders Adı</th>
+                                <th>Proje Konusu</th>
+                                <th>Durum</th>
+                                <th>Taslak Teslim</th>
+                                <th>Ara Kontrol</th>
+                                <th>Nihai Teslim</th>
+                                <th>Öğretmen Notu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var proj in projects)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@proj.CourseName</td>
+                                    <td>@proj.Topic</td>
+                                    <td>
+                                        @{
+                                            var badgeClass = proj.Status switch {
+                                                NoteTrackerApp.Models.ProjectStatus.Atandı => "bg-secondary",
+                                                NoteTrackerApp.Models.ProjectStatus.Taslak => "bg-info text-dark",
+                                                NoteTrackerApp.Models.ProjectStatus.AraKontrol => "bg-warning text-dark",
+                                                NoteTrackerApp.Models.ProjectStatus.NihaiFazı => "bg-primary",
+                                                NoteTrackerApp.Models.ProjectStatus.Teslim => "bg-success",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass">@proj.Status</span>
+                                    </td>
+                                    <td>@(proj.DraftDueDate?.ToString("dd MMM yyyy") ?? "-")</td>
+                                    <td>@(proj.CheckDate?.ToString("dd MMM yyyy") ?? "-")</td>
+                                    <td>@(proj.FinalDueDate?.ToString("dd MMM yyyy") ?? "-")</td>
+                                    <td class="small text-muted" style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="@proj.TeacherNote">
+                                        @(string.IsNullOrEmpty(proj.TeacherNote) ? "-" : proj.TeacherNote)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-folder-x fs-2 d-block mb-2"></i>
+                    Atanmış bir proje ödeviniz bulunmuyor.
                 </div>
             }
         </div>
