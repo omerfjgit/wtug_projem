@@ -6,6 +6,6 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - key: DATABASE_URL
-        value: "mysql://user:pass@host:port/dbname" # Değiştirilmesi gerekiyor
+        sync: false
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
