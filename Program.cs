@@ -46,8 +46,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<NoteTrackerApp.Data.AppDbContext>();
     db.Database.Migrate();
-    await StudentSeeder.SeedAsync(db);
-    await GradeSeeder.SeedAsync(db);
+    // await StudentSeeder.SeedAsync(db);
+    // await GradeSeeder.SeedAsync(db);
 }
 
 // Configure the HTTP request pipeline.
